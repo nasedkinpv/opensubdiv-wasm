@@ -1,5 +1,5 @@
 ..  
-     Copyright 2013 Pixar
+     Copyright 2019 Pixar
   
      Licensed under the Apache License, Version 2.0 (the "Apache License")
      with the following modification; you may not use this file except in
@@ -22,8 +22,8 @@
      language governing permissions and limitations under the Apache License.
   
 
-dxViewer
---------
+mtlViewer
+---------
 
 .. contents::
    :local:
@@ -32,29 +32,44 @@ dxViewer
 SYNOPSIS
 ========
 
-.. parsed-literal:: 
+.. parsed-literal::
    :class: codefhead
 
-   **dxViewer** [**-f**] [**-yup**] [**-u**] [**-a**] [**-l** *refinement level*] [**-c** *animation loops*]
+   **open** **mtlViewer.app** **--args** [**-yup**] [**-u**] [**-a**] [**-l** *refinement level*]
       *objfile(s)* [**-catmark**] [**-loop**] [**-bilinear**]
 
 DESCRIPTION
 ===========
 
-``dxViewer`` is a stand-alone application that showcases the application of 
+``mtlViewer`` is a stand-alone application that showcases the application of
 uniform and feature adaptive subdivision schemes to a collection of geometric
 shapes. Multiple controls are available to experiment with the algorithms.
 
-.. image:: images/dxviewer.png 
-   :width: 400px
-   :align: center
-   :target: images/dxviewer.png 
++----------------------------------------------------+
+| .. image:: images/mtlviewer.png                    |
+|    :width: 400px                                   |
+|    :align: center                                  |
+|    :target: images/mtlviewer.png                   |
+|                                                    |
+| mtlViewer running on macOS                         |
++----------------------------------------------------+
 
-OPTIONS
-=======
++----------------------------------------------------+
+| .. image:: images/mtlviewer_ios.png                |
+|    :width: 400px                                   |
+|    :align: center                                  |
+|    :target: images/mtlviewer_ios.png               |
+|                                                    |
+| mtlViewer running on iOS                           |
++----------------------------------------------------+
 
-See the description of the
-`common comand line options <code_examples.html#common-command-line-options>`__
-for the subset of common options supported here.
+KEYBOARD CONTROLS
+=================
+
+   .. code:: c++
+
+      q      : quit
+      f      : fit frame
+      +/-    : increase / decrease tessellation rate
 
 .. include:: examples_see_also.rst
