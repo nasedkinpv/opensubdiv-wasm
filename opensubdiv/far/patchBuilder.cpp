@@ -1523,7 +1523,7 @@ SourcePatch::Finalize(int size) {
             _localRingSizes[cIndex] = _ringSizes[cIndex] - (_numCorners - 1)
                                     - corner._sharesWithPrev - corner._sharesWithNext;
 
-            if (corner._val2Adjacent) {
+            if (corner._val2Adjacent && !corner._boundary) {
                 _localRingSizes[cIndex] -= prevIsVal2Interior;
                 _localRingSizes[cIndex] -= (nextIsVal2Interior && isQuad);
             }
@@ -1575,7 +1575,7 @@ SourcePatch::GetCornerRingPoints(int corner, int ringPoints[]) const {
     ringPoints[ringSize++] = cPrev;
 
     //  Shared points preceding the local ring points:
-    if (_corners[cPrev]._val2Interior) {
+    if (_corners[cPrev]._val2Interior && !_corners[corner]._boundary) {
         ringPoints[ringSize++] = isQuad ? cOpp : cNext;
     }
     if (_corners[corner]._sharesWithPrev) {
@@ -1592,12 +1592,12 @@ SourcePatch::GetCornerRingPoints(int corner, int ringPoints[]) const {
         if (_corners[corner]._sharesWithNext) {
             ringPoints[ringSize++] = _localRingOffsets[cNext];
         }
-        if (_corners[cNext]._val2Interior) {
+        if (_corners[cNext]._val2Interior && !_corners[corner]._boundary) {
             ringPoints[ringSize++] = cOpp;
         }
     } else {
         if (_corners[corner]._sharesWithNext) {
-            if (_corners[cNext]._val2Interior) {
+            if (_corners[cNext]._val2Interior && !_corners[corner]._boundary) {
                 ringPoints[ringSize++] = cPrev;
             } else if (_localRingSizes[cNext] == 0) {
                 ringPoints[ringSize++] = _localRingOffsets[cPrev];
