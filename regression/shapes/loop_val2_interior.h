@@ -68,6 +68,8 @@ static const std::string loop_val2_interior =
 "f  8/12  9/13 10/14\n"
 "f  9/15  8/16 10/17\n"
 "\n"
+"t crease 2/1/0  7 8  10.0\n"
+"\n"
 "#\n"
 "#   Shape 3:\n"
 "#\n"
