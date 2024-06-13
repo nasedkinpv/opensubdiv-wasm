@@ -93,6 +93,10 @@ static const std::string catmark_val2_back2back =
 "f 13/13 14/14 15/15 16/16 17/17 18/18\n"
 "f 18/18 17/17 16/16 15/15 14/14 13/13\n"
 "\n"
+"t crease 2/1/0  17 12  10.0\n"
+"t crease 2/1/0  12 13  10.0\n"
+"t crease 2/1/0  13 14  10.0\n"
+"\n"
 "t interpolateboundary 1/0/0 1\n"
 "\n"
 ;
