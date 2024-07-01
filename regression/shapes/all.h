@@ -80,6 +80,7 @@
 #include "catmark_nonman_quadpole64.h"
 #include "catmark_nonman_quadpole360.h"
 #include "catmark_nonman_bareverts.h"
+#include "catmark_nonman_creases.h"
 #include "catmark_nonquads.h"
 #include "catmark_pawn.h"
 #include "catmark_pyramid_creases0.h"
