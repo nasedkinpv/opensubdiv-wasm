@@ -79,6 +79,7 @@ initShapesAll(std::vector<ShapeDesc> & shapes) {
     shapes.push_back(ShapeDesc("catmark_nonman_quadpole64", catmark_nonman_quadpole64, kCatmark));
     shapes.push_back(ShapeDesc("catmark_nonman_quadpole360", catmark_nonman_quadpole360, kCatmark));
     shapes.push_back(ShapeDesc("catmark_nonman_bareverts", catmark_nonman_bareverts, kCatmark));
+    shapes.push_back(ShapeDesc("catmark_nonman_creases", catmark_nonman_creases, kCatmark));
     shapes.push_back(ShapeDesc("catmark_nonquads", catmark_nonquads, kCatmark));
     shapes.push_back(ShapeDesc("catmark_pawn", catmark_pawn, kCatmark));
     shapes.push_back(ShapeDesc("catmark_pole8", catmark_pole8, kCatmark));

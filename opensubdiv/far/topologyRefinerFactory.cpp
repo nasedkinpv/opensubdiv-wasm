@@ -304,16 +304,23 @@ TopologyRefinerFactoryBase::prepareComponentTagsAndSharpness(
         bool isSharpenedCorner =  isTopologicalCorner && sharpenCornerVerts;
         if (isSharpenedCorner) {
             vSharpness = Sdc::Crease::SHARPNESS_INFINITE;
-        } else if (vTag._nonManifold && sharpenNonManFeatures) {
+        } else if (vTag._nonManifold && sharpenNonManFeatures &&
+                   !Sdc::Crease::IsInfinite(vSharpness)) {
             //
             //  We avoid sharpening non-manifold vertices when they occur on
             //  interior non-manifold creases, i.e. a pair of opposing non-
             //  manifold edges with more than two incident faces.  In these
             //  cases there are more incident faces than edges (1 more for
-            //  each additional "fin") and no boundaries.
+            //  each additional "fin") and no boundaries. Closer inspection
+            //  of manifold subsets around the vertex is required to truly
+            //  determine the crease case, so avoid it using pre-conditions
+            //  that are available here:
             //
-            if (! ((nonManifoldEdgeCount == 2) && (boundaryEdgeCount == 0) &&
-                   (vFaces.size() > vEdges.size()))) {
+            bool isNonManCrease = (nonManifoldEdgeCount == 2) &&
+                                  (boundaryEdgeCount == 0) &&
+                                  (vFaces.size() > vEdges.size()) &&
+                                  baseLevel.testVertexNonManifoldCrease(vIndex);
+            if (!isNonManCrease) {
                 vSharpness = Sdc::Crease::SHARPNESS_INFINITE;
             }
         }

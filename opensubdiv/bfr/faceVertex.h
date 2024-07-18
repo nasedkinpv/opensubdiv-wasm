@@ -200,7 +200,11 @@ private:
     void assignUnOrderedFaceNeighbors(Edge const  edges[],
                                       short const faceEdgeIndices[]);
 
-    void finalizeUnOrderedTags(Edge const edges[], int numEdges);
+    bool testNonManifoldCrease(Edge const edges[], int numEdges,
+                               Index const faceVertIndices[]) const;
+
+    void finalizeUnOrderedTags(Edge const edges[], int numEdges,
+                               Index const faceVertIndices[]);
 
     //  Ordered counterpart to the above method for finalizing tags
     void finalizeOrderedTags();

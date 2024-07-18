@@ -2029,6 +2029,81 @@ Level::orderVertexFacesAndEdges(Index vIndex) {
     return false;
 }
 
+bool
+Level::testVertexNonManifoldCrease(Index vIndex) const {
+
+    //
+    //  Identify the two non-manifold edges for closer inspection -- the
+    //  two edges must have more than two incident faces and the same
+    //  number of incident faces. All other edges are manifold interior:
+    //
+    Index nonManEdges[2] = { -1, -1 };
+
+    ConstIndexArray vEdges = getVertexEdges(vIndex);
+    for (int i = 0; i < vEdges.size(); ++i) {
+        if (isEdgeNonManifold(vEdges[i])) {
+            if (nonManEdges[1] >= 0) return false;
+            nonManEdges[nonManEdges[0] >= 0] = vEdges[i];
+        } else if (getEdgeFaces(vEdges[i]).size() != 2) {
+            return false;
+        }
+    }
+    if (getEdgeFaces(nonManEdges[0]).size() != getEdgeFaces(nonManEdges[1]).size()) {
+        return false;
+    }
+
+    //
+    //  For each of the two non-manifold edges, inspect their incident faces
+    //  to confirm that the manifold subset connected to each is delimited by
+    //  the two edges (not one):
+    //
+    int numFacesTraversed = 0;
+
+    for (int i = 0; i < 2; ++i) {
+        Index eIndex = nonManEdges[i];
+        Index eStart = nonManEdges[i != 0];
+        Index eEnd   = nonManEdges[i == 0];
+
+        ConstIndexArray      eFaces  = getEdgeFaces(eIndex);
+        ConstLocalIndexArray eInFace = getEdgeFaceLocalIndices(eIndex);
+
+        //
+        //  For each face incident the two non-manifold edges, identify
+        //  manifold subset of faces associated with each. First test
+        //  the orientation of the edge in the starting face -- skipping
+        //  this face if the edge is reversed as it should be at the end
+        //  of a subset starting from the other crease edge:
+        //
+        for (int j = 0; j < eFaces.size(); ++j) {
+            Index fStart = eFaces[j];
+
+            ConstIndexArray fVerts = getFaceVertices(fStart);
+            if (fVerts[eInFace[j]] != vIndex) continue;
+
+            //
+            //  For each successive leading edge of a manifold sequence of
+            //  faces, identify the face following that edge (if not the
+            //  first) and edge that precedes it in the face -- continuing
+            //  until the ending edge is reached:
+            //
+            for (Index eNext = eStart, fNext = fStart; eNext != eEnd; ) {
+                if (eNext != eStart) {
+                    ConstIndexArray fPair = getEdgeFaces(eNext);
+                    fNext = fPair[fPair[0] == fNext];
+                }
+                numFacesTraversed++;
+
+                ConstIndexArray fEdges = getFaceEdges(fNext);
+                int iNext = fEdges.FindIndex(eNext);
+
+                eNext = fEdges[iNext ? (iNext - 1) : (fEdges.size() - 1)];
+                if (eNext == eStart) return false;
+            }
+        }
+    }
+    return (numFacesTraversed == getVertexFaces(vIndex).size());
+}
+
 //
 //  In development -- methods for accessing face-varying data channels...
 //
