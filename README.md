@@ -118,14 +118,14 @@ cmake --build . --config Release --target install
 
 ```
 SDKROOT=$(xcrun --sdk iphoneos --show-sdk-path) cmake -D NO_PTEX=1 -D NO_DOC=1 \
-      -D NO_OMP=1 -D NO_TBB=1 -D NO_CUDA=1 -D NO_OPENCL=1 -D NO_CLEW=1 \
-      -D CMAKE_TOOLCHAIN_FILE=../cmake/iOSToolchain.cmake -G Xcode \
-      ..
+    -D NO_OMP=1 -D NO_TBB=1 -D NO_CUDA=1 -D NO_OPENCL=1 -D NO_CLEW=1 \
+    -D NO_TUTORIALS=1 -D NO_EXAMPLES=1 -D NO_REGRESSION=1 -D NO_OPENGL=1 \
+    -D CMAKE_TOOLCHAIN_FILE=../cmake/iOSToolchain.cmake -G Xcode \
+    ..
 ```
 
   * This will produce an "OpenSubdiv.xcodeproj" that can be open and the targets 'mtlViewer' and 'mtlPtexViewer' (if NO_PTEX is ommitted and libPtex.a is installed in the iOS SDK) that can be run
-
-### Useful cmake options and environment variables
+  * Use `SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path)` instead for an iOS-Sim target
 
 ````
 -DCMAKE_BUILD_TYPE=[Debug|Release]
