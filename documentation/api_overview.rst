@@ -62,7 +62,7 @@ Layers list:
 |                                         | implementation of subdivision interpolation algorithms.                        |
 +-----------------------------------------+--------------------------------------------------------------------------------+
 | | **Bfr**                               | A suite of classes to provide parameterization, evaluation                     |
-| | Bace Face Representation              | and tessellation on the CPU.  *Bfr* is more flexible and more                  |
+| | Base Face Representation              | and tessellation on the CPU.  *Bfr* is more flexible and more                  |
 | | `Bfr Overview <bfr_overview.html>`__  | scalable than *Osd* but potentially less efficient.                            |
 +-----------------------------------------+--------------------------------------------------------------------------------+
 | | **Osd**                               |                                                                                |
