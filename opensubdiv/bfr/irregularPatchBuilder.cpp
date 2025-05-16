@@ -184,6 +184,7 @@ IrregularPatchBuilder::initializeControlHullInventory() {
                     cHull.numControlFaces = 1;
                     numCornerFaceVerts = faceSize;
                 }
+                cHull.isVal2Interior = true;
             }
         }
         if (cSub._numFacesBefore) {
@@ -217,7 +218,63 @@ IrregularPatchBuilder::initializeControlHullInventory() {
     //  Use/build a map for the control vertex indices when incident
     //  faces overlap to an extent that makes traversal ill-defined:
     //
-    _controlFacesOverlap = (numVal2IntCorners > 0);
+    //  Currently a single val-2 interior vertex is handled without
+    //  the map in most cases. The presence of more than one val-2
+    //  interior vertex leads to convoluted topology traversals that
+    //  are avoided by the use of the map.
+    //
+    _controlFacesOverlap = (numVal2IntCorners > 1);
+
+    if (numVal2IntCorners == 1) {
+        //
+        //  Identify and inspect the topology at the val-2 corner to
+        //  see if it warrants handling with the vertex map. Tag the
+        //  neighboring corners accordingly if not:
+        //
+        for (int corner = 0; corner < faceSize; ++corner) {
+            CornerHull & cHull = _cornerHullInfo[corner];
+
+            if (cHull.isVal2Interior) {
+                FaceVertex const & cTop = _surface.GetCornerTopology(corner);
+
+                int oppFaceSize = cTop.GetFaceSize(cTop.GetFaceAfter(1));
+                if (oppFaceSize == 3) {
+                    //  All three corners of the opposite face are corners
+                    //  of the base face
+                    _controlFacesOverlap = true;
+                    break;
+                }
+                if ((oppFaceSize == 4) && (numVal3IntAdjTris == (faceSize-2))) {
+                    //  Possible "pyramid" where a single exterior vertex
+                    //  must added as a special case
+                    _controlFacesOverlap = true;
+                    break;
+                }
+
+                //  Tag the preceding corner of the val-2 corner:
+                int prevCorner = corner ? (corner - 1) : (faceSize - 1);
+                _cornerHullInfo[prevCorner].preVal2Interior = true;
+                break;
+            }
+        }
+
+        //
+        //  If no significant overlap is present, adjust the control vertex
+        //  counts for those preceding the val-2 corner (decrementing by 1)
+        //  and adjust control vertex offsets for all that follow:
+        //
+        if (!_controlFacesOverlap) {
+            _numControlVerts = faceSize;
+            for (int corner = 0; corner < faceSize; ++corner) {
+                CornerHull & cHull = _cornerHullInfo[corner];
+
+                cHull.nextControlVert  = _numControlVerts;
+                cHull.numControlVerts -= cHull.preVal2Interior;
+
+                _numControlVerts += cHull.numControlVerts;
+            }
+        }
+    }
 
     _useControlVertMap = _controlFacesOverlap;
     if (_useControlVertMap) {
@@ -360,8 +417,8 @@ IrregularPatchBuilder::GatherControlVertexIndices(Index cvIndices[]) const {
                 Index const * faceVerts = getCornerFaceIndices(corner,nextFace);
 
                 int S = cTop.GetFaceSize(nextFace);
-                int L = ((j < (N-1)) || cSub.IsBoundary()) ?  0 : 1;
-                int M = (S - 2) - L;
+                int L = (j == (N-1)) ? (1 + cHull.preVal2Interior) : 0;
+                int M = (S - 2) - (cSub.IsBoundary() ? 0 : L);
                 for (int k = 1; k <= M; ++k) {
                     cvIndices[numIndices++] = faceVerts[k];
                 }
@@ -380,7 +437,7 @@ IrregularPatchBuilder::GatherControlVertexIndices(Index cvIndices[]) const {
                 Index const * faceVerts = getCornerFaceIndices(corner,nextFace);
 
                 int S = cTop.GetFaceSize(nextFace);
-                int L = (j < (N-1)) ? 0 : 1;
+                int L = (j == (N-1)) ? (1 + cHull.preVal2Interior) : 0;
                 int M = (S - 2) - L;
                 for (int k = 1; k <= M; ++k) {
                     cvIndices[numIndices++] = faceVerts[k];
@@ -446,12 +503,12 @@ IrregularPatchBuilder::gatherControlFaces(int faceSizes[],
                     getControlFaceVertices(faceVerts, S, corner, nextVert);
                 } else {
                     getControlFaceVertices(faceVerts, S, corner, nextVert,
-                            (j == (N - 1)));
+                            (j == (N-1)), cHull.preVal2Interior);
                 }
                 *faceSizes++ = S;
                 faceVerts   += S;
 
-                nextVert += S - 2;
+                nextVert += S - 2 - (cHull.preVal2Interior && (j == (N-1)));
                 nextFace  = cTop.GetFaceNext(nextFace);
             }
         }
@@ -469,12 +526,12 @@ IrregularPatchBuilder::gatherControlFaces(int faceSizes[],
                             getCornerFaceIndices(corner, nextFace));
                 } else {
                     getControlFaceVertices(faceVerts, S, corner, nextVert,
-                            (j == (N - 1)));
+                            (j == (N-1)), cHull.preVal2Interior);
                 }
                 *faceSizes++ = S;
                 faceVerts   += S;
 
-                nextVert += S - 2;
+                nextVert += S - 2 - (cHull.preVal2Interior && (j == (N-1)));
                 nextFace  = cTop.GetFaceNext(nextFace);
             }
         }
@@ -609,10 +666,13 @@ IrregularPatchBuilder::gatherControlEdgeSharpness(
 
 //
 //  Methods to gather the local face-vertices for a particular incident
-//  face of a corner.  The first is the trivial case -- where all vertices
-//  other than the initial corner vertex lie on the perimeter and do not
-//  wrap around.  The second deals handles more of the complications and
-//  is used in all cases where the trivial method cannot be applied.
+//  face of a corner. The first is a special case that uses the vertex
+//  map to identify local control vertices from their indices. The second
+//  is the trivial case -- where all vertices other than the initial
+//  corner vertex lie on the perimeter and do not wrap around. The third
+//  handles more of the complications and is used in all cases where the
+//  trivial method cannot be applied.
+//
 //
 void
 IrregularPatchBuilder::getControlFaceVertices(int fVerts[], int numFVerts,
@@ -637,38 +697,62 @@ IrregularPatchBuilder::getControlFaceVertices(int fVerts[], int numFVerts,
 
 void
 IrregularPatchBuilder::getControlFaceVertices(int fVerts[], int numFVerts,
-        int corner, int nextPerimeterVert, bool lastFace) const {
+    int corner, int nextPerimeterVert, bool lastFace, int numVal2InLast) const {
 
+    //
+    //  When identifying local face-vertices for a control face adjacent
+    //  to a corner, care is required to deal with the possibility of
+    //  exterior vertices being shared with control faces associated with
+    //  the next corner vertex -- which becomes an issue when sharing
+    //  between the last and first corner.
+    //
+    //  After the initial corner face-vertex, the remaining face-vertices
+    //  are identified in three groups:
+    //    - a simple sequence of exterior vertices following the corner,
+    //      which excludes the last two face-vertices where any sharing
+    //      may occur
+    //    - the next-to-last face-vertex -- an exterior vertex which may
+    //      be shared and wrap around the base face
+    //    - the last face vertex -- an exterior vertex which may also be
+    //      shared/wrapped, or an adj corner vertex for the last face
+    //
     int S = numFVerts;
     int N = _surface.GetFaceSize();
 
-    //
-    //  The typical case:  the corner vertex first, followed by vertices
-    //  on the perimeter -- potentially wrapping around the perimeter to
-    //  the first corner or the base face:
-    //
-    //      - for the last corner only, the face-vert preceding the last
-    //        will wrap around the perimeter
-    //      - for all corners, the last face-vert of the last face wraps
-    //        around the face to the next corner
-    //
+    //  Start with the corner vertex:
     *fVerts++ = corner;
 
-    for (int i = 1; i < S - 2; ++i) {
-        *fVerts++ = nextPerimeterVert + i - 1;
+    //  The simple sequence of exterior vertices follows the corner:
+    int numSequentialVerts = S - 2 - 1 - (lastFace ? numVal2InLast : 0);
+    for (int i = 0; i < numSequentialVerts; ++i) {
+        *fVerts++ = nextPerimeterVert++;
     }
 
-    int nextToLastPerimOfFace = nextPerimeterVert + S - 3;
+    //  The next-to-last face-vertex may be shared with the next face
+    //  and so may wrap around the entire face:
+    int nextToLastPerimOfFace = nextPerimeterVert++;
     if (nextToLastPerimOfFace == _numControlVerts) {
         nextToLastPerimOfFace = N;
     }
     *fVerts++ = nextToLastPerimOfFace;
 
-    int lastPerimOfFace = nextPerimeterVert + S - 2;
-    if (lastPerimOfFace == _numControlVerts) {
-        lastPerimOfFace = N;
+    //  The last face-vertex may be exterior or the adjacent corner:
+    if (!lastFace) {
+        //  If exterior, it may also be shared with the next face and
+        //  wrap around the entire face:
+        int lastPerimOfFace = nextPerimeterVert++;
+        if (lastPerimOfFace == _numControlVerts) {
+            lastPerimOfFace = N;
+        }
+        *fVerts = lastPerimOfFace;
+    } else {
+        //  If the next/adjacent corner, successive corner vertices may
+        //  need to be added if that corner is a val-2 interior vertex:
+        for (int i = numVal2InLast; i > 0; --i) {
+            *fVerts++ = (corner + 1 + i) % N;
+        }
+        *fVerts = (corner + 1) % N;
     }
-    *fVerts++ = lastFace ? ((corner + 1) % N) : lastPerimOfFace;
 }
 
 //

@@ -74,6 +74,9 @@ public:
     void print() const;
 
 public:
+    //  This will not be necessary if use of the index map is ever removed:
+    bool ControlHullDependsOnMeshIndices() const { return _useControlVertMap; }
+
     //  Methods to query the number and indices of control vertices:
     int GetNumControlVertices() const { return _numControlVerts; }
 
@@ -104,6 +107,8 @@ private:
         int          numControlVerts;
         int          nextControlVert;
         int          surfaceIndicesOffset;
+        unsigned int isVal2Interior   : 1;
+        unsigned int preVal2Interior  : 1;
         unsigned int singleSharedVert : 1;
         unsigned int singleSharedFace : 1;
     };
@@ -127,7 +132,7 @@ private:
                                 int  corner,      int nextPerimeterVert) const;
     void getControlFaceVertices(int  faceVerts[], int numFaceVerts,
                                 int  corner,      int nextPerimeterVert,
-                                bool lastFace) const;
+                                bool lastFace,    int numVal2InLast) const;
     void getControlFaceVertices(int  faceVerts[], int numFaceVerts,
                                 int  corner,      Index const srcVerts[]) const;
 
