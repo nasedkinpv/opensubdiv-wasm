@@ -217,8 +217,14 @@ tessellateToObj(Far::TopologyRefiner const & meshTopology,
 
     //
     //  Assign Tessellation Options applied for all faces.  Tessellations
-    //  allow the creating of either 3- or 4-sided faces -- both of which
+    //  allow the creation of either 3- or 4-sided faces -- both of which
     //  are supported here via a command line option:
+    //
+    //  Remember that the use of non-uniform tessellation rates can lead
+    //  to triangles being generated in 4-sided facets along boundaries
+    //  (quad-preservation does not generate all quads). Such triangles
+    //  are indicated by the use of an invalid/negative index in the fourth
+    //  position.
     //
     int const tessFacetSize = 3 + options.tessQuadsFlag;
 
@@ -333,6 +339,9 @@ tessellateToObj(Far::TopologyRefiner const & meshTopology,
         //  using the number of vertices generated prior to this face. One
         //  of several Tessellation methods to transform the facet indices
         //  simply translates all indices by the desired offset.
+        //
+        //  Remember also that triangles may be generated in 4-sided facets
+        //  along boundaries and should be detected accordingly.
         //
         int objVertexIndexOffset = objWriter.GetNumVertices();
 
