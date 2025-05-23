@@ -462,6 +462,19 @@ class Dependency(object):
 
 
 ############################################################
+# Intel oneTBB
+
+ONETBB_URL = "https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.12.0.zip"
+
+def InstallOneTBB(context, force, buildArgs):
+    with CurrentWorkingDirectory(DownloadURL(ONETBB_URL, context, force)):
+        RunCMake(context, force,
+                 ['-DTBB_TEST=OFF',
+                  '-DTBB_STRICT=OFF'] + buildArgs)
+
+ONETBB = Dependency("oneTBB", InstallOneTBB, "include/oneapi/tbb.h")
+
+############################################################
 # Intel TBB
 
 if Windows():
@@ -509,7 +522,7 @@ TBB = Dependency("TBB", InstallTBB, "include/tbb/tbb.h")
 ############################################################
 # GLFW
 
-GLFW_URL = "https://github.com/glfw/glfw/archive/3.2.1.zip"
+GLFW_URL = "https://github.com/glfw/glfw/archive/3.3.3.zip"
 
 def InstallGLFW(context, force, buildArgs):
     with CurrentWorkingDirectory(DownloadURL(GLFW_URL, context, force)):
@@ -520,7 +533,7 @@ GLFW = Dependency("GLFW", InstallGLFW, "include/GLFW/glfw3.h")
 ############################################################
 # zlib
 
-ZLIB_URL = "https://github.com/madler/zlib/archive/v1.2.11.zip"
+ZLIB_URL = "https://github.com/madler/zlib/archive/v1.2.13.zip"
 
 def InstallZlib(context, force, buildArgs):
     with CurrentWorkingDirectory(DownloadURL(ZLIB_URL, context, force)):
@@ -531,37 +544,17 @@ ZLIB = Dependency("zlib", InstallZlib, "include/zlib.h")
 ############################################################
 # Ptex
 
-PTEX_URL = "https://github.com/wdas/ptex/archive/v2.1.28.zip"
+PTEX_URL = "https://github.com/wdas/ptex/archive/refs/tags/v2.4.2.zip"
 
 def InstallPtex(context, force, buildArgs):
-    if Windows():
-        InstallPtex_Windows(context, force, buildArgs)
-    else:
-        InstallPtex_LinuxOrMacOS(context, force, buildArgs)
+    cmakeOptions = [
+        '-DBUILD_TESTING=OFF',
+        '-DPTEX_BUILD_STATIC_LIBS=OFF',
+    ]
+    cmakeOptions += buildArgs
 
-def InstallPtex_Windows(context, force, buildArgs):
     with CurrentWorkingDirectory(DownloadURL(PTEX_URL, context, force)):
-        # Ptex has a bug where the import library for the dynamic library and
-        # the static library both get the same name, Ptex.lib, and as a
-        # result one clobbers the other. We hack the appropriate CMake
-        # file to prevent that. Since we don't need the static library we'll
-        # rename that.
-        #
-        # In addition src\tests\CMakeLists.txt adds -DPTEX_STATIC to the
-        # compiler but links tests against the dynamic library, causing the
-        # links to fail. We patch the file to not add the -DPTEX_STATIC
-        PatchFile('src\\ptex\\CMakeLists.txt',
-                  [("set_target_properties(Ptex_static PROPERTIES OUTPUT_NAME Ptex)",
-                    "set_target_properties(Ptex_static PROPERTIES OUTPUT_NAME Ptexs)")])
-        PatchFile('src\\tests\\CMakeLists.txt',
-                  [("add_definitions(-DPTEX_STATIC)",
-                    "# add_definitions(-DPTEX_STATIC)")])
-
-        RunCMake(context, force, buildArgs)
-
-def InstallPtex_LinuxOrMacOS(context, force, buildArgs):
-    with CurrentWorkingDirectory(DownloadURL(PTEX_URL, context, force)):
-        RunCMake(context, force, buildArgs)
+        RunCMake(context, force, cmakeOptions)
 
 PTEX = Dependency("Ptex", InstallPtex, "include/PtexVersion.h")
 
@@ -583,7 +576,7 @@ def InstallOpenSubdiv(context, force, buildArgs):
         else:
             extraArgs.append('-DNO_PTEX=ON')
 
-        if context.buildTBB:
+        if context.buildTBB or context.buildOneTBB:
             extraArgs.append('-DNO_TBB=OFF')
         else:
             extraArgs.append('-DNO_TBB=ON')
@@ -773,6 +766,12 @@ subgroup.add_argument("--tbb", dest="build_tbb", action="store_true",
 subgroup.add_argument("--no-tbb", dest="build_tbb",
                       action="store_false",
                       help="Disable TBB support (default)")
+subgroup.add_argument("--onetbb", dest="build_onetbb", action="store_true",
+                      default=False,
+                      help="Enable oneTBB support")
+subgroup.add_argument("--no-onetbb", dest="build_onetbb",
+                      action="store_false",
+                      help="Disable oneTBB support (default)")
 
 subgroup = group.add_mutually_exclusive_group()
 subgroup.add_argument("--omp", dest="build_omp", action="store_true",
@@ -879,6 +878,7 @@ class InstallContext:
         self.buildTests = args.build_tests
         self.buildDocs = args.build_docs
         self.buildTBB = args.build_tbb
+        self.buildOneTBB = args.build_onetbb
         self.buildOMP = args.build_omp
         self.buildCUDA = args.build_cuda
         self.cudaLocation = args.cuda_location
@@ -926,6 +926,8 @@ if context.buildPtex:
 
 if context.buildTBB:
     requiredDependencies += [TBB]
+if context.buildOneTBB:
+    requiredDependencies += [ONETBB]
 
 
 
@@ -971,6 +973,7 @@ Building with settings:
 
   Building
       TBB support:              {buildTBB}
+      oneTBB support:           {buildOneTBB}
       OMP support:              {buildOMP}
       CUDA support:             {buildCUDA}
       OpenCL support:           {buildOpenCL}
@@ -1010,6 +1013,7 @@ summaryMsg = summaryMsg.format(
                   ", ".join([d.name for d in dependenciesToBuild])),
     buildArgs=FormatBuildArguments(context.buildArgs),
     buildTBB=("On" if context.buildTBB else "Off"),
+    buildOneTBB=("On" if context.buildOneTBB else "Off"),
     buildOMP=("On" if context.buildOMP else "Off"),
     buildCUDA=("On" if context.buildCUDA else "Off"),
     buildOpenCL=("On" if context.buildOpenCL else "Off"),
