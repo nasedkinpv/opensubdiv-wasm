@@ -228,6 +228,8 @@ TbbEvaluator::SetNumThreads(int numThreads) {
     } else {
         tbb::task_scheduler_init init(numThreads);
     }
+#else
+    (void) numThreads;
 #endif
 }
 
