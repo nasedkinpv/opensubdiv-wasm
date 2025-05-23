@@ -79,6 +79,7 @@ list(APPEND PLATFORM_LIBRARIES
     "-framework Foundation"
     "-framework QuartzCore"
     "${PTEX_LIBRARY}"
+    "${ZLIB_LIBRARY}"
 )
 
 osd_stringify("mtlPtexViewer.metal" INC_FILES)
