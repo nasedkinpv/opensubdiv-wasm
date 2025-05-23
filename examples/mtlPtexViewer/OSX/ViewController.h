@@ -41,10 +41,6 @@
 @property (weak) IBOutlet OSDView *view;
 @property (nonatomic) OSDRenderer* osdRenderer;
 
-- (IBAction)checkboxChanged:(NSButton *)sender;
-- (IBAction)popupChanged:(NSPopUpButton *)sender;
-- (IBAction)sliderChanged:(NSSlider *)sender;
-
 @property (weak) IBOutlet NSTextField *frameTimeLabel;
 @property (weak) IBOutlet NSButton *wireframeCheckbox;
 @property (weak) IBOutlet NSButton *singleCreaseCheckbox;

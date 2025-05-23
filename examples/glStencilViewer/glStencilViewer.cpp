@@ -1027,9 +1027,9 @@ initHUD() {
 #endif
 
     for (int i = 1; i < 11; ++i) {
-        char level[16];
-        sprintf(level, "Lv. %d", i);
-        g_hud.AddRadioButton(3, level, i==g_isolationLevel, 10, 250+i*20, callbackLevel, i, '0'+(i%10));
+        const std::string level = "Lv. " + std::to_string(i);
+        g_hud.AddRadioButton(3, level.c_str(), i==g_isolationLevel,
+                             10, 250+i*20, callbackLevel, i, '0'+(i%10));
     }
 
     int pulldown_handle = g_hud.AddPullDown("Shape (N)", -300, 10, 300, callbackModel, 'n');

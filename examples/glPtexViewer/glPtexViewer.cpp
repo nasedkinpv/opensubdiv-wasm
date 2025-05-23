@@ -1873,9 +1873,8 @@ int main(int argc, char ** argv) {
                           10, 300, callbackCheckBox, HUD_CB_ADAPTIVE, '`');
 
     for (int i = 1; i < 8; ++i) {
-        char level[16];
-        sprintf(level, "Lv. %d", i);
-        g_hud.AddRadioButton(HUD_RB_LEVEL, level, i == g_level,
+        const std::string level = "Lv. " + std::to_string(i);
+        g_hud.AddRadioButton(HUD_RB_LEVEL, level.c_str(), i == g_level,
                              10, 320+i*20, callbackLevel, i, '0'+i);
     }
 

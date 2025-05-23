@@ -197,7 +197,7 @@ enum {
         }
     };
     
-    auto callbackScheme = [=](int scheme) {
+    auto callbackScheme = [=](int) {
         return;
     };
     
@@ -318,10 +318,10 @@ enum {
 //                       10, 300, callbackCheckbox, kHUD_CB_ADAPTIVE, '`');
     
     for (int i = 1; i < 8; ++i) {
-        char level[16];
-        sprintf(level, "Lv. %d", i);
-        hud.AddRadioButton(kHUD_RB_LEVEL, level, _osdRenderer.refinementLevel == i,
-                              10, 320+i*20, callbackLevel, i, '0'+i);
+        NSString *level = [NSString stringWithFormat:@"Lv. %d", i];
+        hud.AddRadioButton(kHUD_RB_LEVEL, [level UTF8String],
+                           i==(int)_osdRenderer.refinementLevel,
+                           10, 320+i*20, callbackLevel, i, '0'+i);
     }
     
     int compute_pulldown = hud.AddPullDown("Compute (K)", 475, 10, 300, callbackKernel, 'k');
@@ -428,7 +428,7 @@ enum {
     __weak auto blockSemaphore = _frameSemaphore;
     unsigned frameId = _currentFrame % FRAME_HISTORY;
     auto frameBeginTime = CACurrentMediaTime();
-    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull c) {
+    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
         dispatch_semaphore_signal(blockSemaphore);
         _frameBeginTimestamp[frameId] = CACurrentMediaTime() - frameBeginTime;
     }];
