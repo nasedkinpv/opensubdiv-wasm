@@ -821,9 +821,14 @@ SurfaceFactory::assignIrregularSurface(SurfaceType * surfacePtr,
     //
     //  Construct a new irregular patch or identify one from the cache:
     //
+    //  Note that in rare cases where control faces overlap, the current
+    //  implementation of IrregularPatchBuilder may create patches whose
+    //  size varies with the indices of neighboring vertices (producing a
+    //  unique set). So we cannot use a cached result in such cases.
+    //
     internal::IrregularPatchSharedPtr patch(0);
 
-    if (_topologyCache == 0) {
+    if ((_topologyCache == 0) || builder.ControlHullDependsOnMeshIndices()) {
         patch = builder.Build();
     } else {
         //
