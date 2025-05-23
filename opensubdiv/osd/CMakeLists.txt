@@ -66,6 +66,70 @@ list(APPEND KERNEL_FILES
 )
 
 #-------------------------------------------------------------------------------
+# GLSL patch shader source
+if( OSD_PATCH_SHADER_SOURCE_GLSL OR
+        (NOT NO_OPENGL AND (OPENGL_FOUND OR OPENGLES_FOUND)) )
+    list(APPEND PUBLIC_HEADER_FILES
+        glslPatchShaderSource.h
+    )
+    list(APPEND GPU_SOURCE_FILES
+        glslPatchShaderSource.cpp
+    )
+    list(APPEND KERNEL_FILES
+        glslPatchCommon.glsl
+        glslPatchCommonTess.glsl
+        glslPatchBoxSplineTriangle.glsl
+        glslPatchBSpline.glsl
+        glslPatchGregory.glsl
+        glslPatchGregoryBasis.glsl
+        glslPatchGregoryTriangle.glsl
+        glslPatchLegacy.glsl
+    )
+endif()
+
+#-------------------------------------------------------------------------------
+# HLSL patch shader source
+if( OSD_PATCH_SHADER_SOURCE_HLSL OR DXSDK_FOUND )
+    list(APPEND PUBLIC_HEADER_FILES
+        hlslPatchShaderSource.h
+    )
+    list(APPEND GPU_SOURCE_FILES
+        hlslPatchShaderSource.cpp
+    )
+    list(APPEND KERNEL_FILES
+        hlslPatchCommon.hlsl
+        hlslPatchCommonTess.hlsl
+        hlslPatchBoxSplineTriangle.hlsl
+        hlslPatchBSpline.hlsl
+        hlslPatchGregory.hlsl
+        hlslPatchGregoryBasis.hlsl
+        hlslPatchGregoryTriangle.hlsl
+        hlslPatchLegacy.hlsl
+    )
+endif()
+
+#-------------------------------------------------------------------------------
+# MSL patch shader source
+if( OSD_PATCH_SHADER_SOURCE_MSL OR METAL_FOUND )
+    list(APPEND PUBLIC_HEADER_FILES
+        mtlPatchShaderSource.h
+    )
+    list(APPEND GPU_SOURCE_FILES
+        mtlPatchShaderSource.mm
+    )
+    list(APPEND KERNEL_FILES
+        mtlPatchCommon.metal
+        mtlPatchCommonTess.metal
+        mtlPatchBoxSplineTriangle.metal
+        mtlPatchBSpline.metal
+        mtlPatchGregory.metal
+        mtlPatchGregoryBasis.metal
+        mtlPatchGregoryTriangle.metal
+        mtlPatchLegacy.metal
+    )
+endif()
+
+#-------------------------------------------------------------------------------
 set(OPENMP_PUBLIC_HEADERS
     ompEvaluator.h
     ompKernel.h
@@ -119,7 +183,6 @@ set(GL_PUBLIC_HEADERS
     glPatchTable.h
     glVertexBuffer.h
     glMesh.h
-    glslPatchShaderSource.h
 )
 
 if( (NOT NO_OPENGL) AND (OPENGL_FOUND OR OPENGLES_FOUND) )
@@ -128,21 +191,8 @@ if( (NOT NO_OPENGL) AND (OPENGL_FOUND OR OPENGLES_FOUND) )
         glLegacyGregoryPatchTable.cpp
         glPatchTable.cpp
         glVertexBuffer.cpp
-        glslPatchShaderSource.cpp
     )
     list(APPEND PUBLIC_HEADER_FILES ${GL_PUBLIC_HEADERS})
-    if ( OPENGL_FOUND )
-        list(APPEND KERNEL_FILES
-            glslPatchCommon.glsl
-            glslPatchCommonTess.glsl
-            glslPatchBoxSplineTriangle.glsl
-            glslPatchBSpline.glsl
-            glslPatchGregory.glsl
-            glslPatchGregoryBasis.glsl
-            glslPatchGregoryTriangle.glsl
-            glslPatchLegacy.glsl
-        )
-    endif()
 endif()
 
 list(APPEND DOXY_HEADER_FILES ${GL_PUBLIC_HEADERS})
@@ -201,7 +251,6 @@ set(DXSDK_PUBLIC_HEADERS
     d3d11PatchTable.h
     d3d11VertexBuffer.h
     d3d11Mesh.h
-    hlslPatchShaderSource.h
 )
 if( DXSDK_FOUND )
     list(APPEND GPU_SOURCE_FILES
@@ -210,19 +259,10 @@ if( DXSDK_FOUND )
         d3d11LegacyGregoryPatchTable.cpp
         d3d11PatchTable.cpp
         d3d11VertexBuffer.cpp
-        hlslPatchShaderSource.cpp
     )
     list(APPEND PUBLIC_HEADER_FILES ${DXSDK_PUBLIC_HEADERS})
     list(APPEND KERNEL_FILES
         hlslComputeKernel.hlsl
-        hlslPatchCommon.hlsl
-        hlslPatchCommonTess.hlsl
-        hlslPatchBoxSplineTriangle.hlsl
-        hlslPatchBSpline.hlsl
-        hlslPatchGregory.hlsl
-        hlslPatchGregoryBasis.hlsl
-        hlslPatchGregoryTriangle.hlsl
-        hlslPatchLegacy.hlsl
     )
     list(APPEND PLATFORM_GPU_LIBRARIES
         ${DXSDK_LIBRARIES}
@@ -239,7 +279,6 @@ set(METAL_PUBLIC_HEADERS
     mtlLegacyGregoryPatchTable.h
     mtlPatchTable.h
     mtlMesh.h
-    mtlPatchShaderSource.h
     mtlCommon.h
 )
 
@@ -251,7 +290,6 @@ if( METAL_FOUND )
         mtlLegacyGregoryPatchTable.mm
         mtlPatchTable.mm
         mtlVertexBuffer.mm
-        mtlPatchShaderSource.mm
     )
 
     set_source_files_properties(
@@ -261,20 +299,9 @@ if( METAL_FOUND )
         "-fobjc-arc")
 
     list(APPEND GPU_SOURCE_FILES ${METAL_SOURCE_FILES})
-
-    
-
     list(APPEND PUBLIC_HEADER_FILES ${METAL_PUBLIC_HEADERS})
     list(APPEND KERNEL_FILES
        mtlComputeKernel.metal
-       mtlPatchCommon.metal
-       mtlPatchCommonTess.metal
-       mtlPatchBoxSplineTriangle.metal
-       mtlPatchBSpline.metal
-       mtlPatchGregory.metal
-       mtlPatchGregoryBasis.metal
-       mtlPatchGregoryTriangle.metal
-       mtlPatchLegacy.metal
     )
     list(APPEND PLATFORM_GPU_LIBRARIES
         ${METAL_LIBRARIES}
