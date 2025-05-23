@@ -316,10 +316,12 @@ private:
     //
     static const uint64 sc_const = 0xdeadbeefdeadbeefLL;
 
+#ifdef OPENSUBDIV3_BFR_HASH_INCLUDE_UNUSED_FUNCTIONS
     uint64 m_data[2*sc_numVars];   // unhashed data, for partial messages
     uint64 m_state[sc_numVars];  // internal state of the hash
     size_t m_length;             // total length of the input so far
     uint8  m_remainder;          // length of unhashed data stashed in m_data
+#endif
 };
 
 #define ALLOW_UNALIGNED_READS 1
