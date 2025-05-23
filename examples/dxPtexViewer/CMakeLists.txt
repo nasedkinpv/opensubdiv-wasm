@@ -44,6 +44,7 @@ include_directories(
 
 if (OPENCL_FOUND)
     include_directories("${OPENCL_INCLUDE_DIRS}")
+    list(APPEND PLATFORM_LIBRARIES OpenGL::GL)
 endif()
 
 set(SOURCE_FILES
