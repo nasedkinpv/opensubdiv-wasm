@@ -87,7 +87,7 @@ GLVertexBuffer::GetNumVertices() const {
     return _numVertices;
 }
 
-GLuint
+GLVertexBuffer::ID
 GLVertexBuffer::BindVBO(void * /*deviceContext*/) {
 
     return _vbo;

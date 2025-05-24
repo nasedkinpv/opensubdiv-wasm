@@ -28,7 +28,6 @@
 #include "../version.h"
 
 #include "../osd/nonCopyable.h"
-#include "../osd/opengl.h"
 #include "../osd/types.h"
 
 #include <vector>
@@ -44,7 +43,8 @@ namespace Osd {
 
 class GLPatchTable : private NonCopyable<GLPatchTable> {
 public:
-    typedef GLuint VertexBufferBinding;
+    using ID = unsigned int;        // GLuint resource ID
+    using VertexBufferBinding = ID; // buffer binding type
 
     ~GLPatchTable();
 
@@ -57,22 +57,22 @@ public:
     }
 
     /// Returns the GL index buffer containing the patch control vertices
-    GLuint GetPatchIndexBuffer() const {
+    ID GetPatchIndexBuffer() const {
         return _patchIndexBuffer;
     }
 
     /// Returns the GL index buffer containing the patch parameter
-    GLuint GetPatchParamBuffer() const {
+    ID GetPatchParamBuffer() const {
         return _patchParamBuffer;
     }
 
     /// Returns the GL texture buffer containing the patch control vertices
-    GLuint GetPatchIndexTextureBuffer() const {
+    ID GetPatchIndexTextureBuffer() const {
         return _patchIndexTexture;
     }
 
     /// Returns the GL texture buffer containing the patch parameter
-    GLuint GetPatchParamTextureBuffer() const {
+    ID GetPatchParamTextureBuffer() const {
         return _patchParamTexture;
     }
 
@@ -82,12 +82,12 @@ public:
     }
 
     /// Returns the GL index buffer containing the varying control vertices
-    GLuint GetVaryingPatchIndexBuffer() const {
+    ID GetVaryingPatchIndexBuffer() const {
         return _varyingIndexBuffer;
     }
 
     /// Returns the GL texture buffer containing the varying control vertices
-    GLuint GetVaryingPatchIndexTextureBuffer() const {
+    ID GetVaryingPatchIndexTextureBuffer() const {
         return _varyingIndexTexture;
     }
 
@@ -100,22 +100,22 @@ public:
     }
 
     /// Returns the GL index buffer containing face-varying control vertices
-    GLuint GetFVarPatchIndexBuffer(int fvarChannel = 0) const {
+    ID GetFVarPatchIndexBuffer(int fvarChannel = 0) const {
         return _fvarIndexBuffers[fvarChannel];
     }
 
     /// Returns the GL texture buffer containing face-varying control vertices
-    GLuint GetFVarPatchIndexTextureBuffer(int fvarChannel = 0) const {
+    ID GetFVarPatchIndexTextureBuffer(int fvarChannel = 0) const {
         return _fvarIndexTextures[fvarChannel];
     }
 
     /// Returns the GL index buffer containing face-varying patch params
-    GLuint GetFVarPatchParamBuffer(int fvarChannel = 0) const {
+    ID GetFVarPatchParamBuffer(int fvarChannel = 0) const {
         return _fvarParamBuffers[fvarChannel];
     }
 
     /// Returns the GL texture buffer containing face-varying patch params
-    GLuint GetFVarPatchParamTextureBuffer(int fvarChannel = 0) const {
+    ID GetFVarPatchParamTextureBuffer(int fvarChannel = 0) const {
         return _fvarParamTextures[fvarChannel];
     }
 
@@ -127,22 +127,22 @@ protected:
 
     PatchArrayVector _patchArrays;
 
-    GLuint _patchIndexBuffer;
-    GLuint _patchParamBuffer;
+    ID _patchIndexBuffer;
+    ID _patchParamBuffer;
 
-    GLuint _patchIndexTexture;
-    GLuint _patchParamTexture;
+    ID _patchIndexTexture;
+    ID _patchParamTexture;
 
     PatchArrayVector _varyingPatchArrays;
-    GLuint _varyingIndexBuffer;
-    GLuint _varyingIndexTexture;
+    ID _varyingIndexBuffer;
+    ID _varyingIndexTexture;
 
     std::vector<PatchArrayVector> _fvarPatchArrays;
-    std::vector<GLuint> _fvarIndexBuffers;
-    std::vector<GLuint> _fvarIndexTextures;
+    std::vector<ID> _fvarIndexBuffers;
+    std::vector<ID> _fvarIndexTextures;
 
-    std::vector<GLuint> _fvarParamBuffers;
-    std::vector<GLuint> _fvarParamTextures;
+    std::vector<ID> _fvarParamBuffers;
+    std::vector<ID> _fvarParamTextures;
 };
 
 

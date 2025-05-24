@@ -27,7 +27,6 @@
 
 #include "../version.h"
 
-#include "../osd/opengl.h"
 #include "../osd/opencl.h"
 
 namespace OpenSubdiv {
@@ -46,6 +45,8 @@ namespace Osd {
 ///
 class CLGLVertexBuffer {
 public:
+    using ID = unsigned int;    // GLuint resource ID
+
     /// Creator. Returns NULL if error.
     static CLGLVertexBuffer * Create(int numElements,
                                      int numVertices,
@@ -83,7 +84,7 @@ public:
 
     /// Returns the GL buffer object. If the buffer is mapped to CL memory
     /// space, it will be unmapped back to GL.
-    GLuint BindVBO(void *deviceContext = NULL);
+    ID BindVBO(void *deviceContext = NULL);
 
 protected:
     /// Constructor.
@@ -102,7 +103,7 @@ protected:
 private:
     int _numElements;
     int _numVertices;
-    GLuint _vbo;
+    ID _vbo;
     cl_command_queue _clQueue;
     cl_mem _clMemory;
 

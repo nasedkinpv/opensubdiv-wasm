@@ -251,16 +251,16 @@ GLComputeEvaluator::Synchronize(void * /*kernel*/) {
 
 bool
 GLComputeEvaluator::EvalStencils(
-    GLuint srcBuffer, BufferDescriptor const &srcDesc,
-    GLuint dstBuffer, BufferDescriptor const &dstDesc,
-    GLuint duBuffer,  BufferDescriptor const &duDesc,
-    GLuint dvBuffer,  BufferDescriptor const &dvDesc,
-    GLuint sizesBuffer,
-    GLuint offsetsBuffer,
-    GLuint indicesBuffer,
-    GLuint weightsBuffer,
-    GLuint duWeightsBuffer,
-    GLuint dvWeightsBuffer,
+    ID srcBuffer, BufferDescriptor const &srcDesc,
+    ID dstBuffer, BufferDescriptor const &dstDesc,
+    ID duBuffer,  BufferDescriptor const &duDesc,
+    ID dvBuffer,  BufferDescriptor const &dvDesc,
+    ID sizesBuffer,
+    ID offsetsBuffer,
+    ID indicesBuffer,
+    ID weightsBuffer,
+    ID duWeightsBuffer,
+    ID dvWeightsBuffer,
     int start, int end) const {
 
     return EvalStencils(srcBuffer, srcDesc,
@@ -279,22 +279,22 @@ GLComputeEvaluator::EvalStencils(
 
 bool
 GLComputeEvaluator::EvalStencils(
-    GLuint srcBuffer, BufferDescriptor const &srcDesc,
-    GLuint dstBuffer, BufferDescriptor const &dstDesc,
-    GLuint duBuffer,  BufferDescriptor const &duDesc,
-    GLuint dvBuffer,  BufferDescriptor const &dvDesc,
-    GLuint duuBuffer, BufferDescriptor const &duuDesc,
-    GLuint duvBuffer, BufferDescriptor const &duvDesc,
-    GLuint dvvBuffer, BufferDescriptor const &dvvDesc,
-    GLuint sizesBuffer,
-    GLuint offsetsBuffer,
-    GLuint indicesBuffer,
-    GLuint weightsBuffer,
-    GLuint duWeightsBuffer,
-    GLuint dvWeightsBuffer,
-    GLuint duuWeightsBuffer,
-    GLuint duvWeightsBuffer,
-    GLuint dvvWeightsBuffer,
+    ID srcBuffer, BufferDescriptor const &srcDesc,
+    ID dstBuffer, BufferDescriptor const &dstDesc,
+    ID duBuffer,  BufferDescriptor const &duDesc,
+    ID dvBuffer,  BufferDescriptor const &dvDesc,
+    ID duuBuffer, BufferDescriptor const &duuDesc,
+    ID duvBuffer, BufferDescriptor const &duvDesc,
+    ID dvvBuffer, BufferDescriptor const &dvvDesc,
+    ID sizesBuffer,
+    ID offsetsBuffer,
+    ID indicesBuffer,
+    ID weightsBuffer,
+    ID duWeightsBuffer,
+    ID dvWeightsBuffer,
+    ID duuWeightsBuffer,
+    ID duvWeightsBuffer,
+    ID dvvWeightsBuffer,
     int start, int end) const {
 
     if (!_stencilKernel.program) return false;
@@ -368,15 +368,15 @@ GLComputeEvaluator::EvalStencils(
 
 bool
 GLComputeEvaluator::EvalPatches(
-    GLuint srcBuffer, BufferDescriptor const &srcDesc,
-    GLuint dstBuffer, BufferDescriptor const &dstDesc,
-    GLuint duBuffer,  BufferDescriptor const &duDesc,
-    GLuint dvBuffer,  BufferDescriptor const &dvDesc,
+    ID srcBuffer, BufferDescriptor const &srcDesc,
+    ID dstBuffer, BufferDescriptor const &dstDesc,
+    ID duBuffer,  BufferDescriptor const &duDesc,
+    ID dvBuffer,  BufferDescriptor const &dvDesc,
     int numPatchCoords,
-    GLuint patchCoordsBuffer,
+    ID patchCoordsBuffer,
     const PatchArrayVector &patchArrays,
-    GLuint patchIndexBuffer,
-    GLuint patchParamsBuffer) const {
+    ID patchIndexBuffer,
+    ID patchParamsBuffer) const {
 
     return EvalPatches(srcBuffer, srcDesc,
                        dstBuffer, dstDesc,
@@ -394,18 +394,18 @@ GLComputeEvaluator::EvalPatches(
 
 bool
 GLComputeEvaluator::EvalPatches(
-    GLuint srcBuffer, BufferDescriptor const &srcDesc,
-    GLuint dstBuffer, BufferDescriptor const &dstDesc,
-    GLuint duBuffer,  BufferDescriptor const &duDesc,
-    GLuint dvBuffer,  BufferDescriptor const &dvDesc,
-    GLuint duuBuffer, BufferDescriptor const &duuDesc,
-    GLuint duvBuffer, BufferDescriptor const &duvDesc,
-    GLuint dvvBuffer, BufferDescriptor const &dvvDesc,
+    ID srcBuffer, BufferDescriptor const &srcDesc,
+    ID dstBuffer, BufferDescriptor const &dstDesc,
+    ID duBuffer,  BufferDescriptor const &duDesc,
+    ID dvBuffer,  BufferDescriptor const &dvDesc,
+    ID duuBuffer, BufferDescriptor const &duuDesc,
+    ID duvBuffer, BufferDescriptor const &duvDesc,
+    ID dvvBuffer, BufferDescriptor const &dvvDesc,
     int numPatchCoords,
-    GLuint patchCoordsBuffer,
+    ID patchCoordsBuffer,
     const PatchArrayVector &patchArrays,
-    GLuint patchIndexBuffer,
-    GLuint patchParamsBuffer) const {
+    ID patchIndexBuffer,
+    ID patchParamsBuffer) const {
 
     if (!_patchKernel.program) return false;
 

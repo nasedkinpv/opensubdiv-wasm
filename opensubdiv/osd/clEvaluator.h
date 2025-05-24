@@ -99,7 +99,7 @@ private:
 
 class CLEvaluator {
 public:
-    typedef bool Instantiatable;
+    using Instantiatable = bool;    // Enable compiled kernel evaluator cache
 
     /// Generic creator template.
     template <typename DEVICE_CONTEXT>

@@ -29,7 +29,6 @@
 
 #include "../far/patchTable.h"
 #include "../osd/nonCopyable.h"
-#include "../osd/opengl.h"
 
 namespace OpenSubdiv {
 namespace OPENSUBDIV_VERSION {
@@ -39,25 +38,27 @@ namespace Osd {
 class GLLegacyGregoryPatchTable
     : private NonCopyable<GLLegacyGregoryPatchTable> {
 public:
+    using ID = unsigned int;    // GLuint resource ID
+
     ~GLLegacyGregoryPatchTable();
 
     static GLLegacyGregoryPatchTable *Create(Far::PatchTable const *patchTable);
 
-    void UpdateVertexBuffer(GLuint vbo);
+    void UpdateVertexBuffer(ID vbo);
 
-    GLuint GetVertexTextureBuffer() const {
+    ID GetVertexTextureBuffer() const {
         return _vertexTextureBuffer;
     }
 
-    GLuint GetVertexValenceTextureBuffer() const {
+    ID GetVertexValenceTextureBuffer() const {
         return _vertexValenceTextureBuffer;
     }
 
-    GLuint GetQuadOffsetsTextureBuffer() const {
+    ID GetQuadOffsetsTextureBuffer() const {
         return _quadOffsetsTextureBuffer;
     }
 
-    GLuint GetQuadOffsetsBase(Far::PatchDescriptor::Type type) {
+    ID GetQuadOffsetsBase(Far::PatchDescriptor::Type type) {
         if (type == Far::PatchDescriptor::GREGORY_BOUNDARY) {
             return _quadOffsetsBase[1];
         }
@@ -68,10 +69,10 @@ protected:
     GLLegacyGregoryPatchTable();
 
 private:
-    GLuint _vertexTextureBuffer;
-    GLuint _vertexValenceTextureBuffer;
-    GLuint _quadOffsetsTextureBuffer;
-    GLuint _quadOffsetsBase[2];       // gregory, boundaryGregory
+    ID _vertexTextureBuffer;
+    ID _vertexValenceTextureBuffer;
+    ID _quadOffsetsTextureBuffer;
+    ID _quadOffsetsBase[2];       // gregory, boundaryGregory
 };
 
 

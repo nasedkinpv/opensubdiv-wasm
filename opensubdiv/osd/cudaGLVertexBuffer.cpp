@@ -97,7 +97,7 @@ CudaGLVertexBuffer::BindCudaBuffer() {
     return static_cast<float*>(_devicePtr);
 }
 
-GLuint
+CudaGLVertexBuffer::ID
 CudaGLVertexBuffer::BindVBO(void * /*deviceContext*/) {
 
     unmap();
