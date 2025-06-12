@@ -316,7 +316,7 @@ struct PipelineConfig {
 
     ArgOptions args;
 
-    args.Parse(argsVector.size(), argsVector.data());
+    args.Parse((int)argsVector.size(), argsVector.data());
 
     // Parse remaining args
     const std::vector<const char *> &rargs = args.GetRemainingArgs();
@@ -935,7 +935,6 @@ struct PipelineConfig {
 }
 
 -(void)_rebuildBuffers {
-    auto totalPatches = 0;
     auto totalPerPatchVertexSize = 0;
     auto totalPerPatchTessFactorsSize = 0;
     auto totalTessFactorsSize = 0;
@@ -973,8 +972,6 @@ struct PipelineConfig {
                                                                  ? sizeof(MTLTriangleTessellationFactorsHalf)
                                                                  : sizeof(MTLQuadTessellationFactorsHalf));
             }
-
-            totalPatches += patch.GetNumPatches();
         }
 
         _tessFactorsBuffer.alloc(_context.device, totalTessFactorsSize, @"tessellation factors buffer", MTLResourceStorageModePrivate);

@@ -109,13 +109,13 @@ static id<MTLBuffer> createBuffer(const std::vector<T> &vec,
 
     const auto length = sizeof(T) * vec.size();
 #if TARGET_OS_IOS || TARGET_OS_TV
-    return [context->device newBufferWithBytes:vec.data() length:length options:MTLResourceOptionCPUCacheModeDefault];
+    return [context->device newBufferWithBytes:vec.data() length:length options:MTLResourceCPUCacheModeDefaultCache];
 #elif TARGET_OS_OSX
   @autoreleasepool {
     auto cmdBuf = [context->commandQueue commandBuffer];
     auto blitEncoder = [cmdBuf blitCommandEncoder];
 
-    auto stageBuffer = [context->device newBufferWithBytes:vec.data() length:length options:MTLResourceOptionCPUCacheModeDefault];
+    auto stageBuffer = [context->device newBufferWithBytes:vec.data() length:length options:MTLResourceCPUCacheModeDefaultCache];
 
     auto finalBuffer = [context->device newBufferWithLength:length options:MTLResourceStorageModePrivate];
 
@@ -362,7 +362,7 @@ bool MTLComputeEvaluator::Compile(BufferDescriptor const &srcDesc,
 
     _parameterBuffer =
       [context->device newBufferWithLength:sizeof(mtl::KernelUniformArgs)
-                                   options:MTLResourceOptionCPUCacheModeDefault];
+                                   options:MTLResourceCPUCacheModeDefaultCache];
 
     return true;
 }

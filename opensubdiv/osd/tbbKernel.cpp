@@ -339,7 +339,6 @@ class TbbEvalPatchesKernel {
     float * _dstDuu;
     float * _dstDuv;
     float * _dstDvv;
-    int _numPatchCoords;
     const PatchCoord *_patchCoords;
     const PatchArray *_patchArrayBuffer;
     const int        *_patchIndexBuffer;
@@ -353,7 +352,7 @@ public:
                          float *dstDuu,    BufferDescriptor dstDuuDesc,
                          float *dstDuv,    BufferDescriptor dstDuvDesc,
                          float *dstDvv,    BufferDescriptor dstDvvDesc,
-                         int numPatchCoords,
+                         int /*numPatchCoords*/,
                          const PatchCoord *patchCoords,
                          const PatchArray *patchArrayBuffer,
                          const int *patchIndexBuffer,
@@ -364,7 +363,6 @@ public:
         _src(src), _dst(dst),
         _dstDu(dstDu), _dstDv(dstDv),
         _dstDuu(dstDuu), _dstDuv(dstDuv), _dstDvv(dstDvv),
-        _numPatchCoords(numPatchCoords),
         _patchCoords(patchCoords),
         _patchArrayBuffer(patchArrayBuffer),
         _patchIndexBuffer(patchIndexBuffer),

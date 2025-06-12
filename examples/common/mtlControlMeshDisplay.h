@@ -47,10 +47,10 @@ public:
 private:
     bool createProgram(MTLRenderPipelineDescriptor* pipelineDescriptor);
 
+    id<MTLDevice> _device;
+
     bool _displayEdges;
     bool _displayVertices;
-
-    id<MTLDevice> _device;
 
     int _numEdges, _numPoints;
     id<MTLRenderPipelineState> _renderPipelineState;

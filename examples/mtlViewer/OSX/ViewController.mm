@@ -405,9 +405,10 @@ enum {
     }
     
     for (int i = 1; i < 11; ++i) {
-        char level[16];
-        sprintf(level, "Lv. %d", i);
-        hud.AddRadioButton(3, level, i==_osdRenderer.refinementLevel, 10, 310+i*20, callbackLevel, i, '0'+(i%10));
+        NSString *level = [NSString stringWithFormat:@"Lv. %d", i];
+        hud.AddRadioButton(3, [level UTF8String],
+                           i==(int)_osdRenderer.refinementLevel,
+                           10, 310+i*20, callbackLevel, i, '0'+(i%10));
     }
 
     int shapes_pulldown = hud.AddPullDown("Shape (N)", -300, 10, 300, callbackModel, 'n');
@@ -470,7 +471,7 @@ enum {
     __weak auto blockSemaphore = _frameSemaphore;
     unsigned frameId = _currentFrame % FRAME_HISTORY;
     auto frameBeginTime = CACurrentMediaTime();
-    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull c) {
+    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
         dispatch_semaphore_signal(blockSemaphore);
         _frameBeginTimestamp[frameId] = CACurrentMediaTime() - frameBeginTime;
     }];

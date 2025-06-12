@@ -59,7 +59,7 @@ static id<MTLBuffer> createBuffer(const void* data, const size_t length,
     auto cmdBuf = [context->commandQueue commandBuffer];
     auto blitEncoder = [cmdBuf blitCommandEncoder];
 
-    auto stageBuffer = [context->device newBufferWithBytes:data length:length options:MTLResourceOptionCPUCacheModeDefault];
+    auto stageBuffer = [context->device newBufferWithBytes:data length:length options:MTLResourceCPUCacheModeDefaultCache];
 
     auto finalBuffer = [context->device newBufferWithLength:length options:MTLResourceStorageModePrivate];
 
