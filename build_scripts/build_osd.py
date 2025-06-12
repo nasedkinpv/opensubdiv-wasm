@@ -124,6 +124,14 @@ def GetVisualStudioCompilerAndVersion():
             return (msvcCompiler, tuple(int(v) for v in match.groups()))
     return None
 
+def IsVisualStudio2022OrGreater():
+    VISUAL_STUDIO_2022_VERSION = (17, 0)
+    msvcCompilerAndVersion = GetVisualStudioCompilerAndVersion()
+    if msvcCompilerAndVersion:
+        _, version = msvcCompilerAndVersion
+        return version >= VISUAL_STUDIO_2022_VERSION
+    return False
+
 def IsVisualStudio2019OrGreater():
     VISUAL_STUDIO_2019_VERSION = (16, 0)
     msvcCompilerAndVersion = GetVisualStudioCompilerAndVersion()
@@ -235,7 +243,10 @@ def RunCMake(context, force, extraArgs = None):
     # On Windows, we need to explicitly specify the generator to ensure we're
     # building a 64-bit project. (Surely there is a better way to do this?)
     if generator is None and Windows():
-        if IsVisualStudio2019OrGreater():
+        if IsVisualStudio2022OrGreater():
+            generator = "Visual Studio 17 2022"
+            generatorPlatform = "x64"
+        elif IsVisualStudio2019OrGreater():
             generator = "Visual Studio 16 2019"
             generatorPlatform = "x64"
         elif IsVisualStudio2017OrGreater():
