@@ -337,6 +337,10 @@ option(NO_GLFW "Disable components depending on GLFW" OFF)
 option(NO_GLFW_X11 "Disable GLFW components depending on X11" OFF)
 option(NO_MACOS_FRAMEWORK "Disable generation of framework on macOS" OFF)
 
+option(OSD_PATCH_SHADER_SOURCE_GLSL "GLSL Patch Shader Source" OFF)
+option(OSD_PATCH_SHADER_SOURCE_HLSL "HLSL Patch Shader Source" OFF)
+option(OSD_PATCH_SHADER_SOURCE_MSL "MSL Patch Shader Source" OFF)
+
 option(OPENSUBDIV_GREGORY_EVAL_TRUE_DERIVATIVES "Enable true derivative evaluation for Gregory basis patches" OFF)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -346,7 +350,16 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 # below may wind up stomping over this value.
 set(build_shared_libs "${BUILD_SHARED_LIBS}")
 
-set(OSD_GPU FALSE)
+# If the build is configured to have patch shader source then set the
+# internal flag OSD_GPU to TRUE, otherwise initialize to FALSE and allow
+# it to be enabled later while resolving other dependencies.
+if (OSD_PATCH_SHADER_SOURCE_GLSL OR
+    OSD_PATCH_SHADER_SOURCE_HLSL OR
+    OSD_PATCH_SHADER_SOURCE_MSL)
+    set(OSD_GPU TRUE)
+else()
+    set(OSD_GPU FALSE)
+endif()
 
 # Check for dependencies
 if(NOT NO_OMP)
@@ -742,7 +755,7 @@ endmacro()
 # use when cross compiling or building multi-architecture binaries.
 # We also provide a C++ binary implementation so that Python is not
 # required (for backward compatibility).
-if (OPENGL_FOUND OR OPENCL_FOUND OR DXSDK_FOUND OR METAL_FOUND)
+if (OPENGL_FOUND OR OPENCL_FOUND OR DXSDK_FOUND OR METAL_FOUND OR OSD_GPU)
     if(Python_Interpreter_FOUND)
         set(OSD_STRINGIFY_TOOL ${CMAKE_CURRENT_SOURCE_DIR}/tools/stringify/stringify.py)
         set(OSD_STRINGIFY ${Python_EXECUTABLE} ${OSD_STRINGIFY_TOOL})
