@@ -40,11 +40,9 @@ set(PLATFORM_LIBRARIES
     "${GLFW_LIBRARIES}"
 )
 
-if ( OPENCL_FOUND )
-    list(APPEND PLATFORM_LIBRARIES
-        "${OPENCL_LIBRARIES}"
-    )
+if (OPENCL_FOUND)
     include_directories( "${OPENCL_INCLUDE_DIRS}" )
+    list(APPEND PLATFORM_LIBRARIES OpenGL::GL)
 endif()
 
 osd_stringify("${SHADER_FILES}" INC_FILES)

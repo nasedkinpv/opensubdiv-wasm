@@ -36,8 +36,9 @@ list(APPEND PLATFORM_LIBRARIES
     "${GLFW_LIBRARIES}"
 )
 
-if( OPENCL_FOUND )
+if (OPENCL_FOUND)
     include_directories("${OPENCL_INCLUDE_DIRS}")
+    list(APPEND PLATFORM_LIBRARIES OpenGL::GL)
 endif()
 
 if( TBB_FOUND )

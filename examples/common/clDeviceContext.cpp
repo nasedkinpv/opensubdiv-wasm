@@ -31,6 +31,7 @@
     #include <windows.h>
 #elif defined(__APPLE__)
     #include <OpenGL/OpenGL.h>
+    #include <OpenGL/CGLCurrent.h>
 #else
     #include <GL/glx.h>
 #endif
@@ -229,6 +230,19 @@ CLDeviceContext::Initialize() {
                             numDevices * sizeof(cl_device_id), clDevices, NULL);
     int clDeviceUsed = 0;
 
+    if (ciErrNum != CL_SUCCESS) {
+        error("Error %d in clCreateContext\n", ciErrNum);
+        delete[] clDevices;
+        return false;
+    }
+
+    _clCommandQueue = clCreateCommandQueue(
+        _clContext, clDevices[clDeviceUsed], 0, &ciErrNum);
+    delete[] clDevices;
+    if (ciErrNum != CL_SUCCESS) {
+        error("Error %d in clCreateCommandQueue\n", ciErrNum);
+        return false;
+    }
 #else   // not __APPLE__
 
     // get the number of GPU devices available to the platform
@@ -256,21 +270,21 @@ CLDeviceContext::Initialize() {
     _clContext = clCreateContext(props, 1, &clDevices[clDeviceUsed],
                                  NULL, NULL, &ciErrNum);
 
-#endif   // not __APPLE__
-
     if (ciErrNum != CL_SUCCESS) {
         error("Error %d in clCreateContext\n", ciErrNum);
         delete[] clDevices;
         return false;
     }
 
-    _clCommandQueue = clCreateCommandQueue(_clContext, clDevices[clDeviceUsed],
-                                    0, &ciErrNum);
+    _clCommandQueue = clCreateCommandQueueWithProperties(
+        _clContext, clDevices[clDeviceUsed], NULL, &ciErrNum);
     delete[] clDevices;
     if (ciErrNum != CL_SUCCESS) {
-        error("Error %d in clCreateCommandQueue\n", ciErrNum);
+        error("Error %d in clCreateCommandQueueWithProperties\n", ciErrNum);
         return false;
     }
+#endif   // not __APPLE__
+
     return true;
 }
 
@@ -336,11 +350,11 @@ CLD3D11DeviceContext::Initialize(ID3D11DeviceContext *d3dDeviceContext) {
         return false;
     }
 
-    _clCommandQueue = clCreateCommandQueue(_clContext, clDevices[clDeviceUsed],
-                                    0, &ciErrNum);
+    _clCommandQueue = clCreateCommandQueueWithProperties(
+        _clContext, clDevices[clDeviceUsed], NULL, &ciErrNum);
     delete[] clDevices;
     if (ciErrNum != CL_SUCCESS) {
-        error("Error %d in clCreateCommandQueue\n", ciErrNum);
+        error("Error %d in clCreateCommandQueueWithProperties\n", ciErrNum);
         return false;
     }
     return true;
