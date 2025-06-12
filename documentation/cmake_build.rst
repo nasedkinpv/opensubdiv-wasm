@@ -37,7 +37,7 @@ Overview
 
 Assuming that you have `cloned <getting_started.html>`__ the source repository
 and selected an appropriate release branch, the following instructions will
-walk you through the CMake and configuration and build process.
+walk you through the CMake configuration and build process.
 
 CMake is a cross-platform, open-source build system. CMake controls the compilation
 process using platform independent configuration files in order to generate
@@ -62,30 +62,38 @@ build and installation instructions.
 
 Required
 ________
-    - `CMake <http://www.cmake.org/>`__ version 3.12
+    - `CMake <https://www.cmake.org/>`__ version 3.14
 
-Optional
-________
+Optional OpenSubdiv::Osd Dependencies
+_____________________________________
 
-    - `Ptex <http://ptex.us/>`__ (support features for ptex textures and the
-      ptexViewer example)
-    - `Zlib <http://www.zlib.net/>`__ (required for Ptex under Windows)
-    - `CUDA <http://www.nvidia.com/object/cuda_home_new.html>`__
-    - `TBB <http://www.threadingbuildingblocks.org/>`__
-    - `OpenCL <http://www.khronos.org/opencl/>`__
-    - `DX11 SDK <http://www.microsoft.com/>`__
-    - `GLFW <https://github.com/glfw/glfw>`__ (required for standalone examples
-      and some regression tests)
-    - `Docutils <http://docutils.sourceforge.net/>`__ (required for reST-based documentation)
-    - `Python Pygments <http://pygments.org/>`__ (required for Docutils reST styling)
-    - `Doxygen <http://www.doxygen.org/>`__
+    - `OpenGL <https://www.opengl.org>`__
+    - `Metal <https://developer.apple.com/metal>`__
+    - `CUDA <https://developer.nvidia.com/cuda-toolkit>`__
+    - `TBB <https://github.com/uxlfoundation/oneTBB>`__
+    - `OpenCL <https://www.khronos.org/opencl/>`__
+    - `DX11 SDK <https://www.microsoft.com/en-us/download/details.aspx?id=6812>`__
+
+Optional Interactive Example Dependencies
+_________________________________________
+
+    - `GLFW <https://www.glfw.org>`__ (for OpenGL example viewers and some regression tests)
+    - `Ptex <https://ptex.us/>`__ (for Ptex example viewers)
+    - `Zlib <https://www.zlib.net/>`__ (for Ptex example viewers)
+
+Optional Documentation Dependencies
+___________________________________
+
+    - `Doxygen <http://www.doxygen.org/>`__ (for C++ API documentation)
+    - `Docutils <https://pypi.org/project/docutils>`__ (for reStructuredText documentation)
+    - `Python Pygments <https://pypi.org/project/Pygments>`__ (for reStructuredText documentation styling)
 
 ----
 
 Step 2: Configuring CMake
 =========================
 
-One way to configure CMake is to use the `CMake GUI <http://www.cmake.org/cmake/help/runningcmake.html>`__.
+One way to configure CMake is to use the `CMake GUI <https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html>`__.
 In many cases CMake can fall back on default standard paths in order to find the
 packages that OpenSubdiv depends on. For non-standard installations however, a
 complete set of override variables is available. The following sub-section lists
@@ -103,38 +111,45 @@ The following configuration arguments can be passed to the CMake command line.
 
    -DCMAKE_INSTALL_PREFIX=[base path to install OpenSubdiv (default: Current directory)]
    -DCMAKE_LIBDIR_BASE=[library directory basename (default: lib)]
+   -DCMAKE_SYSTEM_NAME=[target system name for cross-compilation builds, e.g. iOS]
 
    -DCMAKE_PREFIX_PATH=[semicolon-separated list of directories specifying installation prefixes to be searched by the find_package() command (default: empty list)]
 
+   -DCUDA_SDK_ROOT_DIR=[path to CUDA]
    -DCUDA_TOOLKIT_ROOT_DIR=[path to CUDA]
    -DOSD_CUDA_NVCC_FLAGS=[CUDA options, e.g. --gpu-architecture]
 
-   -DPTEX_LOCATION=[path to Ptex]
-   -DGLFW_LOCATION=[path to GLFW]
+   -DGLFW_LOCATION=[path to GLFW for OpenGL example viewers]
+   -DPTEX_LOCATION=[path to Ptex for Ptex example viewers]
    -DICC_LOCATION=[path to Intel's C++ Studio XE]
 
    -DNO_LIB=1        // disable the opensubdiv libs build (caveat emptor)
    -DNO_EXAMPLES=1   // disable examples build
    -DNO_TUTORIALS=1  // disable tutorials build
    -DNO_REGRESSION=1 // disable regression tests build
-   -DNO_PTEX=1       // disable PTex support
+   -DNO_PTEX=1       // disable Ptex examples
    -DNO_DOC=1        // disable documentation build
    -DNO_OMP=1        // disable OpenMP
    -DNO_TBB=1        // disable TBB
    -DNO_CUDA=1       // disable CUDA
    -DNO_OPENCL=1     // disable OpenCL
+   -DNO_CLEW=1       // disable OpenCL loader library
    -DNO_OPENGL=1     // disable OpenGL
-   -DNO_CLEW=1       // disable CLEW wrapper library
+   -DNO_METAL=1      // disable Metal
+
+   -DOSD_PATCH_SHADER_SOURCE_GLSL=1  // GLSL Patch Shader Source
+   -DOSD_PATCH_SHADER_SOURCE_HLSL=1  // HLSL Patch Shader Source
+   -DOSD_PATCH_SHADER_SOURCE_MSL=1   // MSL Patch Shader Source
 
 Environment Variables
 _____________________
 
-The paths to Ptex, GLFW, other dependencies can also be specified
+The paths to GLFW, Ptex, Zlib, and other dependencies can also be specified
 through the following environment variables:
 
 .. code:: c++
 
-   PTEX_LOCATION, GLFW_LOCATION
+   GLFW_LOCATION, PTEX_LOCATION, ZLIB_ROOT
 
 Automated Script
 ________________
@@ -147,71 +162,74 @@ time. Here is a typical workflow:
 
     git clone https://github.com/PixarAnimationStudios/OpenSubdiv.git <folder>
     cd <folder>
-    mkdir build
-    cd build
-    source ../../cmake_setup
-
+    source cmake_setup
 
 Where *cmake_setup* is a configuration script.
+
+.. container:: impnotip
+
+   **Important**
+
+      Notice that the following scripts start by **recursively removing** the *buildDir* and
+      *instDir* directories. Make sure you modify them to suit your build workflow.
 
 Here is an example CMake configuration script for a full typical windows-based
 build that can be run in GitShell :
 
 .. code:: c++
 
-    #/bin/tcsh
-
-    # Replace the ".." with a full path to the root of the OpenSubdiv source tree if necessary
-    "c:/Program Files (x86)/CMake 2.8/bin/cmake.exe" \
-        -G "Visual Studio 15 2017 Win64" \
-        -D "GLFW_LOCATION:string=c:/Program Files/glfw-2.7.7.bin.WIN64" \
-        -D "OPENCL_INCLUDE_DIRS:string=c:/ProgramData/NVIDIA Corporation/NVIDIA GPU Computing SDK 4.2/OpenCL/common/inc" \
-        -D "_OPENCL_CPP_INCLUDE_DIRS:string=c:/ProgramData/NVIDIA Corporation/NVIDIA GPU Computing SDK 4.2/OpenCL/common/inc" \
-        -D "OPENCL_LIBRARIES:string=c:/ProgramData/NVIDIA Corporation/NVIDIA GPU Computing SDK 4.2/OpenCL/common/lib/x64/OpenCL.lib" \
-        -D "PTEX_LOCATION:string=c:/Users/opensubdiv/demo/src/ptex/x64" \
-        ..
-
-    # copy Ptex dependencies (Windows only)
-    mkdir -p bin/{Debug,Release}
-    \cp -f c:/Users/opensubdiv/demo/src/zlib-1.2.7/contrib/vstudio/vc10/x64/ZlibDllRelease/zlibwapi.dll bin/Debug/
-    \cp -f c:/Users/opensubdiv/demo/src/zlib-1.2.7/contrib/vstudio/vc10/x64/ZlibDllRelease/zlibwapi.dll bin/Release/
-    \cp -f c:/Users/opensubdiv/demo/src/ptex/x64/lib/Ptex.dll bin/Debug/
-    \cp -f c:/Users/opensubdiv/demo/src/ptex/x64/lib/Ptex.dll bin/Release/
-
-.. container:: impnotip
-
-   **Important**
-
-      Notice that the following scripts start by **recursively removing** the *../build/* and
-      *../inst/* directories. Make sure you modify them to suit your build workflow.
+    echo "*** Removing build"
+    rm -rf buildDir instDir
+    echo "*** Running cmake"
+    cmake -B buildDir \
+          -D CMAKE_INSTALL_PREFIX=instDir \
+          -G "Visual Studio 16 2019" -A x64 \
+          -D "GLFW_LOCATION=C:\path\to\glwf" \
+          -S .
 
 Here is a similar script for \*Nix-based platforms:
 
 .. code:: c++
 
     echo "*** Removing build"
-    cd ..; rm -rf build/ inst/; mkdir build; cd build;
+    rm -rf buildDir instDir
     echo "*** Running cmake"
-    cmake -DPTEX_LOCATION=/home/opensubdiv/dev/opensource/ptex/install \
-          -DGLFW_LOCATION=/home/opensubdiv/dev/opensource/glfw/build \
-          -DDOXYGEN_EXECUTABLE=/home/opensubdiv/dev/opensource/doxygen/inst/bin/doxygen \
-          -DCMAKE_INSTALL_PREFIX=../inst \
-          -DCMAKE_BUILD_TYPE=Debug \
-          ..
+    cmake -B buildDir \
+          -D CMAKE_INSTALL_PREFIX=instDir \
+          -D "GLFW_LOCATION=/path/to/glfw" \
+          -S .
 
 Here is a similar script for macOS:
 
 .. code:: c++
 
     echo "*** Removing build"
-    cd ..; rm -rf build/ inst/; mkdir build; cd build;
+    rm -rf buildDir instDir
     echo "*** Running cmake"
-    cmake -DOPENGL_INCLUDE_DIR=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/Frameworks/OpenGL.framework/Headers \
-          -DGLFW_LOCATION=/Users/opensubdiv/dev/opensource/glfw/inst \
-          -DNO_OMP=1 -DNO_REGRESSION=0 \
-          -DCMAKE_INSTALL_PREFIX=../inst \
-          -DCMAKE_BUILD_TYPE=Debug \
-           .."
+    cmake -B buildDir \
+          -D CMAKE_INSTALL_PREFIX=instDir \
+          -G Xcode \
+          -D "GLFW_LOCATION=/path/to/glfw" \
+          -S .
+
+Here is a similar script for iOS:
+
+Use CMAKE_SYSTEM_NAME to have CMake use the appropriate cross-compilation toolchain when building for iOS.
+
+.. code:: c++
+
+    echo "*** Removing build"
+    rm -rf buildDir instDir
+    echo "*** Running cmake"
+    SDKROOT=$(xcrun --sdk iphoneos --show-sdk-path)
+    cmake -B buildDir \
+          -D CMAKE_INSTALL_PREFIX=instDir \
+          -G Xcode \
+          -D CMAKE_SYSTEM_NAME=iOS \
+          -D NO_PTEX=1 -D NO_DOC=1 \
+          -D NO_OMP=1 -D NO_TBB=1 -D NO_CUDA=1 -D NO_OPENCL=1 -D NO_CLEW=1 \
+          -D NO_TUTORIALS=1 -D NO_EXAMPLES=1 -D NO_REGRESSION=1 -D NO_OPENGL=1 \
+          -S .
 
 Using Intel's C++ Studio XE
 ___________________________
@@ -251,12 +269,12 @@ CMake provides a cross-platform command-line build:
 
 .. code:: c++
 
-    cmake --build . --target install --config Release
+    cmake --build buildDir --target install --config Release
 
 Alternatively, you can use native toolkits to launch the build. The steps differ for each OS:
 
     * *Windows* :
-        launch VC++ with the solution generated by CMake in your build directory.
+        launch VIsual Studio IDE with the solution generated by CMake in your build directory.
 
     * *macOS* :
         launch Xcode with the xcodeproj generated by CMake in your build directory
