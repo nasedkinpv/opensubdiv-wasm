@@ -255,11 +255,6 @@ public:
         std::vector<Osd::PatchCoord> const &patchCoords) = 0;
 };
 
-// note: Since we don't have a class for device-patchcoord container in osd,
-// we cheat to use vertexbuffer as a patch-coord (5int) container.
-//
-// Please don't follow the pattern in your actual application.
-//
 template<typename SRC_VERTEX_BUFFER, typename EVAL_VERTEX_BUFFER,
          typename STENCIL_TABLE, typename PATCH_TABLE, typename EVALUATOR,
          typename DEVICE_CONTEXT = void>
