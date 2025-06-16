@@ -34,6 +34,27 @@
 Release 3.6
 ~~~~~~~~~~~
 
+Release 3.6.1 - June 2025
+=========================
+
+Release 3.6.1 is a minor release including bug fixes and configuration improvements.
+
+**Changes**
+    - Updated CMake minimum version to 3.14 (GitHub #1349)
+    - Updated documentation regarding external dependencies (GitHub #1346 #1360)
+    - Updated API and example documentation (GitHub #1351 #1362)
+    - Updated build_osd.py visual studio discovery and dependent package versions (GitHub #1333 #1354 #1361)
+    - Updated azure pipelines agents (GitHub #1337 #1342 #1355 #1361)
+    - Updated use of OpenCL in example viewers (GitHub #1357)
+    - Addressed Clang 16 compiler warnings (GitHub #1356)
+    - Addressed some address sanitizer build warnings (GitHub #1343)
+    - Added configuration options to build Osd patch shader source independent of other Osd dependencies (GitHub #1359 #1363)
+
+**Bug Fixes**
+    - Fixed evaluation of surface patches at valence-2 darts (GitHub #1336)
+    - Fixed sharpening of vertices on potential non-manifold creases (GitHub #1338)
+    - Fixed sharing of Bfr::Surface topology with valence-2 interior vertices (GitHub #1353)
+
 Release 3.6.0 - Sep 2023
 ==============================
 
