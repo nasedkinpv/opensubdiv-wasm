@@ -1,0 +1,37 @@
+{
+  "name": "opensubdiv-wasm-benchmarks",
+  "version": "1.0.0",
+  "description": "Browser-based benchmark suite for OpenSubdiv WASM builds",
+  "main": "playwright-benchmark.js",
+  "scripts": {
+    "benchmark": "node playwright-benchmark.js",
+    "benchmark:headless": "HEADLESS=true node playwright-benchmark.js",
+    "benchmark:debug": "DEBUG=true HEADLESS=false node playwright-benchmark.js",
+    "benchmark:chrome": "BROWSER=chromium node playwright-benchmark.js",
+    "benchmark:firefox": "BROWSER=firefox node playwright-benchmark.js",
+    "benchmark:webkit": "BROWSER=webkit node playwright-benchmark.js",
+    "install:browsers": "npx playwright install",
+    "test:wasmtime": "wasmtime run wasmtime_test_basic.wasm && wasmtime run wasmtime_test_simd.wasm",
+    "test:node": "node nodejs_cpu_basic.js && node nodejs_cpu_simd.js",
+    "test:all": "npm run test:wasmtime && npm run test:node && npm run benchmark"
+  },
+  "keywords": [
+    "opensubdiv",
+    "wasm",
+    "webassembly",
+    "benchmark",
+    "playwright",
+    "browser-testing"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "playwright": "^1.50.0"
+  },
+  "optionalDependencies": {
+    "@playwright/test": "^1.50.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

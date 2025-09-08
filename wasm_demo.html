@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenSubdiv WASM Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        pre {
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #005a87;
+        }
+        .output {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>OpenSubdiv WASM Demo</h1>
+    <div class="container">
+        <h2>CPU-Only WebAssembly Build</h2>
+        <p>This demonstrates OpenSubdiv's CPU-only subdivision algorithms running in WebAssembly.</p>
+        <p>The demo creates a simple cube mesh and performs 2 levels of Catmull-Clark subdivision.</p>
+        <button onclick="runSubdivision()">Run Subdivision Test</button>
+        <div id="output" class="output" style="display:none;">
+            <h3>Output:</h3>
+            <pre id="result"></pre>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Technical Details</h2>
+        <ul>
+            <li><strong>Library:</strong> OpenSubdiv v3.6.1</li>
+            <li><strong>Build Type:</strong> CPU-only WASM build</li>
+            <li><strong>Subdivision Scheme:</strong> Catmull-Clark</li>
+            <li><strong>Input:</strong> 8 vertices, 6 faces (cube)</li>
+            <li><strong>Refinement Levels:</strong> 2</li>
+            <li><strong>Expected Output:</strong> 132 vertices, 126 faces</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>Build Configuration</h2>
+        <p>This WASM build was configured with the following CMake flags:</p>
+        <pre>emcmake cmake -B wasm-cpu-build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DNO_EXAMPLES=1 \
+    -DNO_TUTORIALS=1 \
+    -DNO_REGRESSION=1 \
+    -DNO_DOC=1 \
+    -DNO_OPENGL=1 \
+    -DNO_METAL=1 \
+    -DNO_DX=1 \
+    -DNO_CUDA=1 \
+    -DNO_OPENCL=1 \
+    -DNO_CLEW=1 \
+    -DNO_OMP=1 \
+    -DNO_TBB=1 \
+    -DNO_PTEX=1 \
+    -DNO_GLFW=1 \
+    -DNO_GLEW=1 \
+    -DBUILD_SHARED_LIBS=OFF \
+    -S .</pre>
+    </div>
+
+    <script>
+        let outputDiv = document.getElementById('output');
+        let resultPre = document.getElementById('result');
+        
+        // Capture console output
+        let capturedOutput = '';
+        const originalLog = console.log;
+        console.log = function(...args) {
+            capturedOutput += args.join(' ') + '\n';
+            originalLog.apply(console, arguments);
+        };
+
+        function runSubdivision() {
+            capturedOutput = '';
+            outputDiv.style.display = 'block';
+            resultPre.textContent = 'Loading and running subdivision test...';
+            
+            // Import and run the WASM module
+            import('./wasm_test.js').then(module => {
+                // The module should automatically run main() and produce output
+                setTimeout(() => {
+                    resultPre.textContent = capturedOutput || 'Subdivision test completed successfully!';
+                }, 100);
+            }).catch(error => {
+                resultPre.textContent = 'Error: ' + error.message;
+            });
+        }
+    </script>
+</body>
+</html>

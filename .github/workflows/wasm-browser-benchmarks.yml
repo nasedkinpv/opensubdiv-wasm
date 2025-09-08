@@ -1,0 +1,236 @@
+name: WASM Browser Performance Tests
+
+on:
+  push:
+    branches: [ wasm, main, release ]
+  pull_request:
+    branches: [ wasm, main, release ]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2am UTC
+
+jobs:
+  benchmark:
+    name: Browser Benchmarks
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+        build: [cpu-basic, cpu-simd, webgpu]
+        exclude:
+          # WebGPU only works in Chromium currently
+          - browser: firefox
+            build: webgpu
+          - browser: webkit
+            build: webgpu
+    
+    container:
+      image: mcr.microsoft.com/playwright:v1.50.0-noble
+      options: --user root
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: wasm
+      
+      - name: Install System Dependencies
+        run: |
+          apt-get update
+          apt-get install -y unzip curl wget build-essential cmake python3 python3-pip
+      
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 'latest'
+      
+      - name: Cache WASM Builds
+        uses: actions/cache@v4
+        id: cache-wasm
+        with:
+          path: |
+            wasm-cpu-build/
+            wasm-cpu-simd-build/
+            wasm-webgpu-build/
+          key: ${{ runner.os }}-wasm-${{ hashFiles('CMakeLists.txt', 'opensubdiv/**/*.h', 'opensubdiv/**/*.cpp') }}
+      
+      - name: Build CPU-Basic WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true' && matrix.build == 'cpu-basic'
+        run: |
+          emcmake cmake -B wasm-cpu-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DNO_EXAMPLES=1 -DNO_TUTORIALS=1 -DNO_REGRESSION=1 -DNO_DOC=1 \
+            -DNO_OPENGL=1 -DNO_METAL=1 -DNO_DX=1 -DNO_CUDA=1 -DNO_OPENCL=1 \
+            -DNO_CLEW=1 -DNO_OMP=1 -DNO_TBB=1 -DNO_PTEX=1 -DNO_GLFW=1 -DNO_GLEW=1 \
+            -DBUILD_SHARED_LIBS=OFF -S .
+          emmake make -C wasm-cpu-build -j$(nproc)
+      
+      - name: Build CPU-SIMD WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true' && matrix.build == 'cpu-simd'
+        run: |
+          emcmake cmake -B wasm-cpu-simd-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_FLAGS="-msimd128 -O3" \
+            -DNO_EXAMPLES=1 -DNO_TUTORIALS=1 -DNO_REGRESSION=1 -DNO_DOC=1 \
+            -DNO_OPENGL=1 -DNO_METAL=1 -DNO_DX=1 -DNO_CUDA=1 -DNO_OPENCL=1 \
+            -DNO_CLEW=1 -DNO_OMP=1 -DNO_TBB=1 -DNO_PTEX=1 -DNO_GLFW=1 -DNO_GLEW=1 \
+            -DBUILD_SHARED_LIBS=OFF -S .
+          emmake make -C wasm-cpu-simd-build -j$(nproc)
+      
+      - name: Build WebGPU WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true' && matrix.build == 'webgpu'
+        run: |
+          emcmake cmake -B wasm-webgpu-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DNO_EXAMPLES=1 -DNO_TUTORIALS=1 -DNO_REGRESSION=1 -DNO_DOC=1 \
+            -DNO_OPENGL=1 -DNO_METAL=1 -DNO_DX=1 -DNO_CUDA=1 -DNO_OPENCL=1 \
+            -DNO_CLEW=1 -DNO_OMP=1 -DNO_TBB=1 -DNO_PTEX=1 -DNO_GLFW=1 -DNO_GLEW=1 \
+            -DBUILD_SHARED_LIBS=OFF -S .
+          emmake make -C wasm-webgpu-build -j$(nproc)
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Dependencies
+        run: |
+          npm install
+          npx playwright install-deps ${{ matrix.browser }}
+      
+      - name: Run Browser Benchmarks
+        env:
+          BROWSER: ${{ matrix.browser }}
+          BUILD: ${{ matrix.build }}
+        run: |
+          node playwright-benchmark-full.js
+      
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ matrix.browser }}-${{ matrix.build }}
+          path: |
+            playwright-benchmark-results.json
+            playwright-benchmark-results.csv
+      
+      - name: Performance Regression Check
+        id: perf-check
+        run: |
+          # Compare with baseline (if exists)
+          if [ -f baseline-results.json ]; then
+            node -e "
+              const current = require('./playwright-benchmark-results.json');
+              const baseline = require('./baseline-results.json');
+              
+              // Check for >10% regression
+              let hasRegression = false;
+              for (const browser in current) {
+                for (const build in current[browser]) {
+                  for (const test of current[browser][build]) {
+                    const baseTest = baseline[browser]?.[build]?.find(t => t.test === test.test);
+                    if (baseTest) {
+                      const regression = (test.avgTime - baseTest.avgTime) / baseTest.avgTime;
+                      if (regression > 0.1) {
+                        console.log(\`⚠️ Performance regression: \${test.test} is \${(regression * 100).toFixed(1)}% slower\`);
+                        hasRegression = true;
+                      }
+                    }
+                  }
+                }
+              }
+              process.exit(hasRegression ? 1 : 0);
+            "
+          fi
+      
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('playwright-benchmark-results.json', 'utf8'));
+            
+            let comment = '## 📊 WASM Performance Results\n\n';
+            comment += `Browser: **${{ matrix.browser }}**\n`;
+            comment += `Build: **${{ matrix.build }}**\n\n`;
+            comment += '| Test | Level | Avg Time | Rate (ops/sec) |\n';
+            comment += '|------|-------|----------|----------------|\n';
+            
+            const browserResults = results['${{ matrix.browser }}'];
+            const buildResults = browserResults?.['${{ matrix.build }}'] || [];
+            
+            for (const result of buildResults) {
+              comment += `| ${result.test} | ${result.level} | ${result.avgTime.toFixed(3)}ms | ${result.rate.toFixed(0)} |\n`;
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+  
+  compare-builds:
+    name: Compare All Builds
+    needs: benchmark
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download All Results
+        uses: actions/download-artifact@v4
+        with:
+          path: results/
+      
+      - name: Generate Comparison Report
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Aggregate all results
+            const allResults = {};
+            const resultsDir = './results';
+            
+            for (const dir of fs.readdirSync(resultsDir)) {
+              const jsonFile = path.join(resultsDir, dir, 'playwright-benchmark-results.json');
+              if (fs.existsSync(jsonFile)) {
+                const data = JSON.parse(fs.readFileSync(jsonFile, 'utf8'));
+                Object.assign(allResults, data);
+              }
+            }
+            
+            // Generate comparison table
+            console.log('# OpenSubdiv WASM Performance Comparison\\n');
+            console.log('## SIMD Performance Impact\\n');
+            
+            for (const browser in allResults) {
+              const basic = allResults[browser]['cpu-basic'];
+              const simd = allResults[browser]['cpu-simd'];
+              
+              if (basic && simd && basic.length > 0) {
+                console.log(\`### \${browser}\\n\`);
+                console.log('| Test | Basic (ms) | SIMD (ms) | Speedup |');
+                console.log('|------|------------|-----------|---------|');
+                
+                for (let i = 0; i < basic.length; i++) {
+                  if (basic[i] && simd[i]) {
+                    const speedup = basic[i].avgTime / simd[i].avgTime;
+                    console.log(\`| \${basic[i].test} | \${basic[i].avgTime.toFixed(3)} | \${simd[i].avgTime.toFixed(3)} | \${speedup.toFixed(2)}x |\`);
+                  }
+                }
+                console.log('');
+              }
+            }
+          " > comparison-report.md
+      
+      - name: Save Comparison Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-comparison-report
+          path: comparison-report.md
+      
+      - name: Update Performance Dashboard
+        if: github.ref == 'refs/heads/wasm'
+        run: |
+          # Would update a performance tracking dashboard/database here
+          echo "Performance results recorded for commit ${{ github.sha }}"
