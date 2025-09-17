@@ -1,3 +1,13 @@
+# @discere-os/opensubdiv.wasm
+
+WebAssembly port of OpenSubdiv - Open source libraries that implement high performance subdivision surface evaluation on massively parallel CPU and GPU architectures.
+
+[![CI/CD](https://github.com/discere-os/discere-nucleus/actions/workflows/opensubdiv-wasm-ci.yml/badge.svg)](https://github.com/discere-os/discere-nucleus/actions)
+[![JSR](https://jsr.io/badges/@discere-os/opensubdiv.wasm)](https://jsr.io/@discere-os/opensubdiv.wasm)
+[![npm version](https://badge.fury.io/js/@discere-os%2Fopensubdiv.wasm.svg)](https://badge.fury.io/js/@discere-os%2Fopensubdiv.wasm)
+[![License](https://img.shields.io/badge/License-Apache--2.0--Modified-blue.svg)](LICENSE.txt)
+[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/discere-os/discere-nucleus)
+
 # OpenSubdiv
 
 OpenSubdiv is a set of open source libraries that implement high performance subdivision surface (subdiv) evaluation on massively parallel CPU and GPU architectures. This codepath is optimized for drawing deforming subdivs with static topology at interactive framerates. The resulting limit surface matches Pixar's Renderman to numerical precision.
@@ -7,11 +17,6 @@ OpenSubdiv is covered by the Apache license, and is free to use for commercial o
 Feel free to use it and let us know what you think.
 
 For more details about OpenSubdiv, see [Pixar Graphics Technologies](http://graphics.pixar.com).
-
-|         |   Linux   |  Windows  |   macOS   |
-|:-------:|:---------:|:---------:|:---------:|
-|   dev   | [![Build Status](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_apis/build/status/PixarAnimationStudios.OpenSubdiv?branchName=dev&amp;jobName=Linux)](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_build/latest?definitionId=2&branchName=dev) | [![Build Status](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_apis/build/status/PixarAnimationStudios.OpenSubdiv?branchName=dev&amp;jobName=Windows)](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_build/latest?definitionId=2&branchName=dev) | [![Build Status](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_apis/build/status/PixarAnimationStudios.OpenSubdiv?branchName=dev&amp;jobName=macOS)](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_build/latest?definitionId=2&branchName=dev) |
-|  release | [![Build Status](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_apis/build/status/PixarAnimationStudios.OpenSubdiv?branchName=release&amp;jobName=Linux)](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_build/latest?definitionId=2&branchName=release) | [![Build Status](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_apis/build/status/PixarAnimationStudios.OpenSubdiv?branchName=release&amp;jobName=Windows)](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_build/latest?definitionId=2&branchName=release) | [![Build Status](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_apis/build/status/PixarAnimationStudios.OpenSubdiv?branchName=release&amp;jobName=macOS)](https://dev.azure.com/PixarAnimationStudios/OpenSubdiv/_build/latest?definitionId=2&branchName=release) |
 
 ## Documents
  * [User Documents](http://graphics.pixar.com/opensubdiv/docs/intro.html)
