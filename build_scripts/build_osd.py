@@ -227,6 +227,15 @@ def RunCMake(context, force, extraArgs = None):
     source code is located in the current working directory."""
     # Create a directory for out-of-source builds in the build directory
     # using the name of the current working directory.
+
+    # Ensure we can freely modify our extraArgs without affecting caller
+    if extraArgs is None:
+        extraArgs = []
+    else:
+        extraArgs = list(extraArgs)
+
+    extraArgs.append("-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
+
     srcDir = os.getcwd()
     instDir = (context.osdInstDir if srcDir == context.osdSrcDir
                else context.instDir)
