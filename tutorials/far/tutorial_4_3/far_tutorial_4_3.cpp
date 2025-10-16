@@ -159,11 +159,11 @@ int main(int, char **) {
         end += nverts;
 
         stencilTable->UpdateValues(srcVerts, destVerts, start, end);
-        
+
         // apply 2 hierarchical edits on level 1 vertices
         if (level==1) {
             float * pos = destVerts[start+5].GetPosition();
-            pos[1] += 0.5f;            
+            pos[1] += 0.5f;
 
             pos = destVerts[start+20].GetPosition();
             pos[0] += 0.25f;
@@ -188,7 +188,7 @@ int main(int, char **) {
                 printf("v %f %f %f\n", pos[0], pos[1], pos[2]);
             }
             verts += nverts;
- 
+
             // Print faces
             for (int face=0; face<refLevel.GetNumFaces(); ++face) {
 
