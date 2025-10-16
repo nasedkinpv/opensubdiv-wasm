@@ -31,15 +31,6 @@ Additional Resources
 
 ----
 
-Links
-=====
-
-
-`OpenSubdiv Github Repository <https://github.com/PixarAnimationStudios/OpenSubdiv>`__
-
-`OpenSubdiv with Mudbox and Maya <http://area.autodesk.com/blogs/craig/pixar--opensubdiv-with-mudbox-and-maya>`__
-
-
 Videos
 ======
 

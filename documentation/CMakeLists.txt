@@ -69,7 +69,6 @@ if (DOCUTILS_FOUND AND Python_Interpreter_FOUND)
         code_examples.rst
         compatibility.rst
         contributing.rst
-        downloads.rst
         dxviewer.rst
         dxptexviewer.rst
         far_overview.rst
