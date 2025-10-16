@@ -17,13 +17,20 @@ Contributing to OpenSubdiv
 Contributor License Agreement
 =============================
 
-In order for us to accept code submissions (merge git pull-requests), contributors
-need to sign the Contributor License Agreement (CLA). There are two CLAs, one for
-individuals and one for corporations. As for the end-user license, both are based
-on Apache. They are found in the code repository (`individual form
-<https://github.com/PixarAnimationStudios/OpenSubdiv/blob/release/OpenSubdivCLA_individual.pdf>`__,
-`corporate form <https://github.com/PixarAnimationStudios/OpenSubdiv/blob/release/OpenSubdivCLA_corporate.pdf>`__).
-Please email the signed CLA to opensubdiv-cla@pixar.com.
+Before contributing code to OpenSubdiv, we ask that you sign a Contributor License
+Agreement (CLA). At the root of the `repository
+<https://github.com/PixarAnimationStudios/OpenSubdiv>`_ you can find the two possible CLAs:
+
+    #. `OpenSubdivCLA_corporate.pdf
+       <https://github.com/PixarAnimationStudios/OpenSubdiv/blob/release/OpenSubdivCLA_corporate.pdf>`_
+       : please sign this one for corporate use
+
+    #. `OpenSubdivCLA_individual.pdf
+       <https://github.com/PixarAnimationStudios/OpenSubdiv/blob/release/OpenSubdivCLA_individual.pdf>`_
+       : please sign this one if you're an individual contributor
+
+Once your CLA is signed, send it to `opensubdiv-cla@pixar.com
+<mailto:opensubdiv-cla@pixar.com>`__.
 
 Understand Git
 ==============

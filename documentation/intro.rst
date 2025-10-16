@@ -111,22 +111,10 @@ animation production.
 Licensing
 =========
 
-OpenSubdiv is covered by the Apache License, and is free to use for commercial or
-non-commercial use. This is the same code that Pixar uses internally for animated
-film production. Our intent is to encourage a geometry standard for subdivision 
-surfaces, by providing consistent (i.e. yielding the same limit surface), high 
-performance implementations on a variety of platforms.
-
-Why Apache? We were looking for a commercial-friendly license that would convey 
-our patents to the end users. This quickly narrowed the field to Microsoft Public 
-License or Apache. Initially we chose MSPL because it handled trademarks better. 
-But at the request of several companies we gave Apache another look, and decided 
-to go with Apache with a very slight modification that simply says you cannot use 
-any contributors' trademarks. In other words, you can use OpenSubdiv to make a 
-product, but you cannot use a Luxo Lamp (or other character, etc.) when marketing 
-your product.
-
-`License Header <license.html>`_
+OpenSubdiv is an `open source project
+<https://github.com/PixarAnimationStudios/OpenSubdiv>`_
+released under the
+`TOST license <https://opensubdiv.org/license>`_.
 
 ----
 
