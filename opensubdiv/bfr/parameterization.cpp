@@ -133,31 +133,30 @@ Parameterization::convertCoordToSubFace(bool normalized,
 
     assert(HasSubFaces());
 
-    int uTile = (int) uvCoord[0];
-    int vTile = (int) uvCoord[1];
+    //  Include an interval around the domain when identifying the subface:
+    int uTile = (int) (uvCoord[0] + 0.25f);
+    int vTile = (int) (uvCoord[1] + 0.25f);
 
-    REAL uFrac = uvCoord[0] - (REAL) uTile;
-    REAL vFrac = uvCoord[1] - (REAL) vTile;
+    //  Clamp tiles in the U and V direction to valid sub-face tiles on
+    //  the boundaries of the rectangular subset. This is trivial in the
+    //  U direction but less so in V as the top row is usually not full
+    //  (so max in V is greater for the first colums in U):
+    uTile = std::max(0, std::min(uTile, _uDim - 1));
 
-    //  Allow for coords slightly outside the domain of each tile:
-    if (uFrac > 0.75f) {
-        uTile ++;
-        uFrac = uFrac - 1.0f;
+    vTile = std::max(0, vTile);
+    if ((vTile * _uDim + uTile) >= _faceSize) {
+        //  Only clamp upper bound in V when tile exceeds face size:
+        vTile = (_faceSize / _uDim) - 1 + (uTile < (_faceSize % _uDim));
     }
-    if (vFrac > 0.75f) {
-        vTile ++;
-        vFrac = vFrac - 1.0f;
-    }
 
-    //  Be sure this assignment always supports in-place conversion:
+    //  Be sure to support in-place conversion (i.e. uvCoord == subCoord):
+    subCoord[0] = uvCoord[0] - (REAL) uTile;
+    subCoord[1] = uvCoord[1] - (REAL) vTile;
     if (normalized) {
-        subCoord[0] = uFrac * 2.0f;
-        subCoord[1] = vFrac * 2.0f;
-    } else {
-        subCoord[0] = uFrac;
-        subCoord[1] = vFrac;
+        subCoord[0] *= 2.0f;
+        subCoord[1] *= 2.0f;
     }
-    return _uDim * vTile + uTile;
+    return vTile * _uDim + uTile;
 }
 
 template <typename REAL>
