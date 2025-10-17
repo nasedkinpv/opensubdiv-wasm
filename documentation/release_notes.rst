@@ -5,7 +5,7 @@
      https://opensubdiv.org/license.
 
 
-3.0 - 3.6 Release Notes
+3.0 - 3.7 Release Notes
 -----------------------
 
 .. contents::
@@ -13,6 +13,24 @@
    :backlinks: none
 
 ----
+
+Release 3.7
+~~~~~~~~~~~
+
+Release 3.7.0 - October 2025
+============================
+
+Release 3.7.0 is a minor release containing bug fixes and other updates.
+
+**Changes**
+    - OpenSubdiv is now licensed under the Tomorrow Open Source Technology license. This is a renaming of the license, but the terms and conditions are the same as before.
+    - Osd classes which interface with GL no longer include platform GL headers (GitHub #1364)
+    - Improved Bfr::Paramaterization conversions to sub-face coordinates (GitHub #1366)
+    - Improved minimal Bfr::Tessellation patterns for quads (GitHub #1372)
+
+**Bug Fixes**
+    - Fixed build errors on some platforms by removing use of GL types from headers (GitHub #1364)
+    - Fixed build_osd.py to improve compatibility with recent versions of CMake and Python (GitHub #1371, #1373)
 
 Release 3.6
 ~~~~~~~~~~~
