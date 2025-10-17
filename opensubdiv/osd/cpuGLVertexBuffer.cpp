@@ -72,7 +72,7 @@ CpuGLVertexBuffer::BindCpuBuffer() {
     return _cpuBuffer;
 }
 
-GLuint
+CpuGLVertexBuffer::ID
 CpuGLVertexBuffer::BindVBO(void * /*deviceContext*/) {
 
     if (! _dataDirty)

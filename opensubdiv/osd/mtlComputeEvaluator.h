@@ -74,7 +74,7 @@ private:
 class MTLComputeEvaluator
 {
 public:
-    typedef bool Instantiatable;
+    using Instantiatable = bool;    // Enable compiled kernel evaluator cache
 
     static MTLComputeEvaluator * Create(BufferDescriptor const &srcDesc,
                                         BufferDescriptor const &dstDesc,

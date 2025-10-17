@@ -78,7 +78,8 @@ private:
 
 class D3D11ComputeEvaluator {
 public:
-    typedef bool Instantiatable;
+    using Instantiatable = bool;    // Enable compiled kernel evaluator cache
+
     static D3D11ComputeEvaluator * Create(BufferDescriptor const &srcDesc,
                                           BufferDescriptor const &dstDesc,
                                           BufferDescriptor const &duDesc,

@@ -73,7 +73,7 @@ CLGLVertexBuffer::BindCLBuffer(cl_command_queue queue) {
     return _clMemory;
 }
 
-GLuint
+CLGLVertexBuffer::ID
 CLGLVertexBuffer::BindVBO(void * /*deviceContext*/) {
 
     unmap();

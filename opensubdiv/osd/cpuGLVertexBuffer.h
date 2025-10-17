@@ -11,7 +11,6 @@
 #include "../version.h"
 
 #include <cstddef>
-#include "../osd/opengl.h"
 
 namespace OpenSubdiv {
 namespace OPENSUBDIV_VERSION {
@@ -29,6 +28,8 @@ namespace Osd {
 ///
 class CpuGLVertexBuffer {
 public:
+    using ID = unsigned int;    // GLuint resource ID
+
     /// Creator. Returns NULL if error.
     static CpuGLVertexBuffer * Create(int numElements, int numVertices,
                                       void *deviceContext = NULL);
@@ -53,7 +54,7 @@ public:
 
     /// Returns the name of GL buffer object. If the buffer is mapped
     /// to cpu address, it will be unmapped back to GL.
-    GLuint BindVBO(void *deviceContext = NULL);
+    ID BindVBO(void *deviceContext = NULL);
 
 protected:
     /// Constructor.
@@ -65,7 +66,7 @@ protected:
 private:
     int _numElements;
     int _numVertices;
-    GLuint _vbo;
+    ID _vbo;
     float *_cpuBuffer;
     bool _dataDirty;
 };

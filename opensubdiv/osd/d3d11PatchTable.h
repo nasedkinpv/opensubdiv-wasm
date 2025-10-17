@@ -31,7 +31,7 @@ namespace Osd {
 
 class D3D11PatchTable : private NonCopyable<D3D11PatchTable> {
 public:
-    typedef ID3D11Buffer * VertexBufferBinding;
+    using VertexBufferBinding = ID3D11Buffer*;  // buffer binding type
 
     D3D11PatchTable();
     ~D3D11PatchTable();

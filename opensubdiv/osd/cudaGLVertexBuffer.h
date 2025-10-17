@@ -14,8 +14,6 @@
 #include <cstddef>
 #include <cuda_runtime.h>
 
-#include "../osd/opengl.h"    // needed before cuda_gl_interop.h
-
 #include <cuda_gl_interop.h>
 
 namespace OpenSubdiv {
@@ -33,6 +31,8 @@ namespace Osd {
 ///
 class CudaGLVertexBuffer {
 public:
+    using ID = unsigned int;    // GLuint resource ID
+
     /// Creator. Returns NULL if error.
     static CudaGLVertexBuffer * Create(int numElements, int numVertices,
                                        void *deviceContext = NULL);
@@ -57,7 +57,7 @@ public:
 
     /// Returns the GL buffer object. If the buffer is mapped as a cuda
     /// resource, it will be unmapped back to GL.
-    GLuint BindVBO(void *deviceContext = NULL);
+    ID BindVBO(void *deviceContext = NULL);
 
 protected:
     /// Constructor.
@@ -76,7 +76,7 @@ protected:
 private:
     int _numElements;
     int _numVertices;
-    GLuint _vbo;
+    ID _vbo;
     void *_devicePtr;
     struct cudaGraphicsResource *_cudaResource;
 };

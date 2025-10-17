@@ -10,7 +10,6 @@
 
 #include "../version.h"
 
-#include "../osd/opengl.h"
 #include <cstddef>
 
 namespace OpenSubdiv {
@@ -26,6 +25,8 @@ namespace Osd {
 ///
 class GLVertexBuffer {
 public:
+    using ID = unsigned int;    // GLuint resource ID
+
     /// Creator. Returns NULL if error.
     static GLVertexBuffer * Create(int numElements, int numVertices,
                                    void *deviceContext = NULL);
@@ -45,7 +46,7 @@ public:
     int GetNumVertices() const;
 
     /// Returns the GL buffer object.
-    GLuint BindVBO(void *deviceContext = NULL);
+    ID BindVBO(void *deviceContext = NULL);
 
 protected:
     /// Constructor.
@@ -58,7 +59,7 @@ protected:
 private:
     int _numElements;
     int _numVertices;
-    GLuint _vbo;
+    ID _vbo;
 };
 
 }  // end namespace Osd

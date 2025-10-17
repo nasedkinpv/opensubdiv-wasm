@@ -28,7 +28,7 @@ namespace Osd {
 
 class MTLPatchTable : private NonCopyable<MTLPatchTable> {
 public:
-    typedef id<MTLBuffer> VertexBufferBinding;
+    using VertexBufferBinding = id<MTLBuffer>;  // buffer binding type
 
     MTLPatchTable();
     ~MTLPatchTable();

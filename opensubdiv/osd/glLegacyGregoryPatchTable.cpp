@@ -88,7 +88,7 @@ GLLegacyGregoryPatchTable::Create(Far::PatchTable const *farPatchTable) {
 }
 
 void
-GLLegacyGregoryPatchTable::UpdateVertexBuffer(GLuint vbo) {
+GLLegacyGregoryPatchTable::UpdateVertexBuffer(ID vbo) {
     glBindTexture(GL_TEXTURE_BUFFER, _vertexTextureBuffer);
     glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, vbo);
     glBindTexture(GL_TEXTURE_BUFFER, 0);
