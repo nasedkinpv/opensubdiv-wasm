@@ -1,0 +1,47 @@
+# Source and build files
+src/
+build-wasm/
+build_scripts/
+opensubdiv/
+cmake/
+glLoader/
+
+# Original OpenSubdiv files
+tutorials/
+regression/
+documentation/
+examples/
+tools/
+
+# Test and development files  
+test/
+*.cpp
+*.html
+tsconfig*.json
+
+# CI/CD
+.github/
+azure-pipelines.yml
+
+# PDFs and docs
+*.pdf
+README.original.md
+
+# Git
+.git/
+.gitignore
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts not needed in package
+CMakeLists.txt
+*.cmake
+*.cmake.in

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenSubdiv WASM + Three.js Test</title>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Loading...</div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const info = document.getElementById('info');
+
+    async function init() {
+      info.textContent = 'Loading OpenSubdiv WASM...';
+
+      const { default: OpenSubdiv } = await import('../../dist/opensubdiv.mjs');
+      const module = await OpenSubdiv();
+
+      info.textContent = 'Creating subdivision surface...';
+
+      const positions = new Float32Array([
+        -0.5, -0.5,  0.5,
+         0.5, -0.5,  0.5,
+        -0.5,  0.5,  0.5,
+         0.5,  0.5,  0.5,
+        -0.5,  0.5, -0.5,
+         0.5,  0.5, -0.5,
+        -0.5, -0.5, -0.5,
+         0.5, -0.5, -0.5
+      ]);
+
+      const indices = new Int32Array([
+        0, 1, 3, 2,
+        2, 3, 5, 4,
+        4, 5, 7, 6,
+        6, 7, 1, 0,
+        1, 7, 5, 3,
+        6, 0, 2, 4
+      ]);
+
+      const mesh = new module.SubdivisionMesh();
+      const subdivLevel = 3;
+      mesh.initFromQuads(positions, indices, 6, subdivLevel, module.BOUNDARY_EDGE_ONLY);
+
+      const outPositions = mesh.getPositions();
+      const outNormals = mesh.getNormals();
+      const outIndices = mesh.getIndices();
+
+      info.textContent = `Level ${subdivLevel}: ${mesh.getVertexCount()} verts, ${mesh.getTriangleCount()} tris`;
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(outPositions), 3));
+      geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(outNormals), 3));
+      geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(outIndices), 1));
+
+      let renderer;
+      let useWebGPU = false;
+
+      if (navigator.gpu) {
+        try {
+          const { default: WebGPURenderer } = await import('three/addons/renderers/webgpu/WebGPURenderer.js');
+          renderer = new WebGPURenderer({ antialias: true });
+          await renderer.init();
+          useWebGPU = true;
+          info.textContent += ' | WebGPU';
+        } catch (e) {
+          console.warn('WebGPU init failed, falling back to WebGL', e);
+        }
+      }
+
+      if (!useWebGPU) {
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        info.textContent += ' | WebGL';
+      }
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      document.body.appendChild(renderer.domElement);
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x1a1a2e);
+
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(2, 2, 3);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      const material = new THREE.MeshStandardMaterial({
+        color: 0x4a90d9,
+        metalness: 0.3,
+        roughness: 0.4,
+        flatShading: false
+      });
+
+      const subdividedMesh = new THREE.Mesh(geometry, material);
+      scene.add(subdividedMesh);
+
+      const wireframeMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.1
+      });
+      const wireframe = new THREE.Mesh(geometry, wireframeMaterial);
+      scene.add(wireframe);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(5, 10, 7);
+      scene.add(directionalLight);
+
+      const originalPositions = new Float32Array(positions);
+      let time = 0;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        time += 0.016;
+
+        for (let i = 0; i < 8; i++) {
+          positions[i * 3 + 0] = originalPositions[i * 3 + 0] + Math.sin(time + i) * 0.1;
+          positions[i * 3 + 1] = originalPositions[i * 3 + 1] + Math.cos(time * 1.3 + i * 0.5) * 0.1;
+          positions[i * 3 + 2] = originalPositions[i * 3 + 2] + Math.sin(time * 0.7 + i * 0.3) * 0.1;
+        }
+
+        mesh.updatePositions(positions);
+
+        const newPositions = mesh.getPositions();
+        const newNormals = mesh.getNormals();
+
+        const posAttr = geometry.getAttribute('position');
+        const normAttr = geometry.getAttribute('normal');
+
+        posAttr.array.set(newPositions);
+        normAttr.array.set(newNormals);
+        posAttr.needsUpdate = true;
+        normAttr.needsUpdate = true;
+
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    init().catch(err => {
+      console.error(err);
+      info.textContent = 'Error: ' + err.message;
+    });
+  </script>
+</body>
+</html>

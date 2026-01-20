@@ -1,37 +1,84 @@
 {
-  "name": "opensubdiv-wasm-benchmarks",
-  "version": "1.0.0",
-  "description": "Browser-based benchmark suite for OpenSubdiv WASM builds",
-  "main": "playwright-benchmark.js",
+  "name": "@nasedkinpv/opensubdiv-wasm",
+  "version": "0.1.0",
+  "description": "WebAssembly port of OpenSubdiv for Three.js - High-performance Catmull-Clark subdivision surfaces in the browser",
+  "main": "dist/opensubdiv.js",
+  "module": "dist/opensubdiv.mjs",
+  "types": "dist/opensubdiv.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/opensubdiv.mjs",
+      "require": "./dist/opensubdiv.js",
+      "types": "./dist/opensubdiv.d.ts"
+    },
+    "./threejs": {
+      "import": "./dist/threejs.js",
+      "require": "./dist/threejs.js",
+      "types": "./dist/threejs.d.ts"
+    }
+  },
+  "files": [
+    "dist/opensubdiv.js",
+    "dist/opensubdiv.mjs",
+    "dist/opensubdiv.wasm",
+    "dist/opensubdiv.d.ts",
+    "dist/opensubdiv.d.mts",
+    "dist/threejs.js",
+    "dist/threejs.d.ts",
+    "NOTICE.txt",
+    "LICENSE.txt"
+  ],
   "scripts": {
-    "benchmark": "node playwright-benchmark.js",
-    "benchmark:headless": "HEADLESS=true node playwright-benchmark.js",
-    "benchmark:debug": "DEBUG=true HEADLESS=false node playwright-benchmark.js",
-    "benchmark:chrome": "BROWSER=chromium node playwright-benchmark.js",
-    "benchmark:firefox": "BROWSER=firefox node playwright-benchmark.js",
-    "benchmark:webkit": "BROWSER=webkit node playwright-benchmark.js",
-    "install:browsers": "npx playwright install",
-    "test:wasmtime": "wasmtime run wasmtime_test_basic.wasm && wasmtime run wasmtime_test_simd.wasm",
-    "test:node": "node nodejs_cpu_basic.js && node nodejs_cpu_simd.js",
-    "test:all": "npm run test:wasmtime && npm run test:node && npm run benchmark"
+    "build:wasm": "em++ -O3 -flto -std=c++17 -I./opensubdiv -I. src/wasm_bindings.cpp build-wasm/lib/libosdCPU.a -o dist/opensubdiv.js --bind -s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME='OpenSubdiv' -s ALLOW_MEMORY_GROWTH=1",
+    "build:wasm:esm": "em++ -O3 -flto -std=c++17 -I./opensubdiv -I. src/wasm_bindings.cpp build-wasm/lib/libosdCPU.a -o dist/opensubdiv.mjs --bind -s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME='OpenSubdiv' -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker'",
+    "build:wasm:optimize": "wasm-opt -Oz --enable-bulk-memory --enable-nontrapping-float-to-int dist/opensubdiv.wasm -o dist/opensubdiv.wasm",
+    "build:threejs": "tsc -p tsconfig.wrapper.json",
+    "build": "npm run build:wasm && npm run build:wasm:esm && npm run build:wasm:optimize && npm run build:threejs",
+    "build:quick": "npm run build:wasm && npm run build:wasm:esm && npm run build:threejs",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/node-test.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "opensubdiv",
+    "subdivision",
+    "catmull-clark",
     "wasm",
     "webassembly",
-    "benchmark",
-    "playwright",
-    "browser-testing"
+    "threejs",
+    "three.js",
+    "webgpu",
+    "3d",
+    "graphics",
+    "mesh",
+    "geometry",
+    "pixar"
   ],
-  "author": "",
-  "license": "Apache-2.0",
-  "devDependencies": {
-    "playwright": "^1.50.0"
+  "author": "nasedkinpv",
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "peerDependencies": {
+    "three": ">=0.170.0"
   },
-  "optionalDependencies": {
-    "@playwright/test": "^1.50.0"
+  "peerDependenciesMeta": {
+    "three": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/three": "^0.182.0",
+    "three": "^0.182.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nasedkinpv/opensubdiv-wasm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nasedkinpv/opensubdiv-wasm/issues"
+  },
+  "homepage": "https://github.com/nasedkinpv/opensubdiv-wasm#readme"
 }

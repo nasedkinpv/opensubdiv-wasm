@@ -1,53 +1,42 @@
-
-# ignore build files
+# Build directories
 /build/*
+/build-wasm/*
+!/build-wasm/lib/
 /inst*
-
-# ignore WASM build files
 /wasm-cpu-build/*
 /wasm-cpu-simd-build/*
 /wasm-cpu-threaded-build/*
 /wasm-webgpu-build/*
 
-# ignore generated WASM output files
-*.js
-*.wasm
-*.wast
-*.wat
-
+# Python
 *.pyc
 osdshim_wrap.cpp
 shim.py
+
+# macOS
 .DS_Store
 
-# WASM build artifacts
-dist/
-build-wasm*/
-*.wasm
-*.js.mem
-*.js.symbols
-*.js.temp
-*.wast
-*.wat
-
-# Emscripten cache and tools
+# Emscripten
 emsdk/
 emsdk_env.sh
 .emscripten_cache/
 
-# Node.js and NPM  
+# Node.js
 node_modules/
-package-lock.json
-yarn.lock
 npm-debug.log*
-
-# Testing and CI artifacts
-test-results/
-benchmark-results/
-coverage/
-.nyc_output/
-build-logs/
 
 # Development tools
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Test artifacts
+test-results/
+benchmark-results/
+coverage/
+.nyc_output/
+
+# Temp files
+*.temp
+*.tmp
