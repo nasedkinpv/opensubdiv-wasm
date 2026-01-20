@@ -3,254 +3,338 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenSubdiv WASM Demo</title>
+  <title>OpenSubdiv WASM</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0d1117;
-      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
       overflow: hidden;
     }
-    #canvas-container { width: 100vw; height: 100vh; }
-    #ui {
+    #container { width: 100vw; height: 100vh; display: block; }
+    
+    #panel {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(22, 27, 34, 0.9);
-      padding: 20px;
-      border-radius: 12px;
-      border: 1px solid #30363d;
-      max-width: 320px;
-      backdrop-filter: blur(10px);
+      top: 24px;
+      left: 24px;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 24px;
+      border-radius: 16px;
+      width: 260px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
-    h1 { font-size: 1.25rem; margin-bottom: 4px; }
-    .subtitle { color: #8b949e; font-size: 0.875rem; margin-bottom: 16px; }
-    .control { margin-bottom: 12px; }
-    label { display: block; color: #8b949e; font-size: 0.75rem; margin-bottom: 4px; }
-    select, input[type="range"] { 
-      width: 100%; 
-      padding: 8px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      color: #e6edf3;
+    
+    h1 { 
+      font-size: 20px; 
+      font-weight: 600;
+      letter-spacing: -0.02em;
     }
-    .stats {
-      background: #161b22;
-      padding: 12px;
+    
+    .tagline { 
+      color: #86868b; 
+      font-size: 13px; 
+      margin-top: 2px;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+    
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 15px;
+      border: none;
       border-radius: 8px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      margin-top: 16px;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      appearance: none;
+      cursor: pointer;
     }
-    .stats div { margin: 4px 0; }
-    .stat-value { color: #58a6ff; }
-    a { color: #58a6ff; }
-    .controls-hint {
+    
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: #d2d2d7;
+      appearance: none;
+      cursor: pointer;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+    
+    .stats {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #e8e8ed;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .stat {
+      font-size: 11px;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    
+    .stat span {
+      display: block;
+      font-size: 17px;
+      font-weight: 500;
+      color: #1d1d1f;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .links {
       margin-top: 16px;
-      padding-top: 12px;
-      border-top: 1px solid #30363d;
-      font-size: 0.75rem;
-      color: #8b949e;
+      padding-top: 16px;
+      border-top: 1px solid #e8e8ed;
+      font-size: 12px;
+    }
+    
+    .links a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    
+    .links a:hover { text-decoration: underline; }
+    
+    .hint {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #86868b;
     }
   </style>
 </head>
 <body>
-  <div id="canvas-container"></div>
-  <div id="ui">
+  <div id="container"></div>
+  
+  <div id="panel">
     <h1>OpenSubdiv WASM</h1>
-    <div class="subtitle">Catmull-Clark Subdivision Surfaces</div>
+    <div class="tagline">Catmull-Clark Subdivision</div>
     
-    <div class="control">
-      <label>Subdivision Level</label>
-      <select id="level">
-        <option value="1">Level 1</option>
-        <option value="2" selected>Level 2</option>
-        <option value="3">Level 3</option>
-        <option value="4">Level 4</option>
-      </select>
+    <div class="controls">
+      <div class="field">
+        <label>Level</label>
+        <select id="level">
+          <option value="1" selected>1 — Low</option>
+          <option value="2">2 — Medium</option>
+          <option value="3">3 — High</option>
+          <option value="4">4 — Ultra</option>
+        </select>
+      </div>
+      
+      <div class="field">
+        <label>Animation</label>
+        <input type="range" id="speed" min="0" max="2" step="0.1" value="1">
+      </div>
     </div>
     
-    <div class="control">
-      <label>Animation Speed</label>
-      <input type="range" id="speed" min="0" max="2" step="0.1" value="1">
+    <div class="stats">
+      <div class="stat">Vertices<span id="verts">—</span></div>
+      <div class="stat">Triangles<span id="tris">—</span></div>
+      <div class="stat">Level<span id="lvl">—</span></div>
+      <div class="stat">FPS<span id="fps">—</span></div>
     </div>
     
-    <div class="stats" id="stats">Loading WASM...</div>
-    
-    <div class="controls-hint">
-      Drag to rotate • Scroll to zoom<br>
-      <a href="https://github.com/nasedkinpv/opensubdiv-wasm" target="_blank">GitHub</a> •
-      <a href="https://www.npmjs.com/package/@nasedkinpv/opensubdiv-wasm" target="_blank">npm</a>
+    <div class="links">
+      <a href="https://github.com/nasedkinpv/opensubdiv-wasm">GitHub</a> · 
+      <a href="https://www.npmjs.com/package/@nasedkinpv/opensubdiv-wasm">npm</a>
     </div>
+    
+    <div class="hint">Drag to rotate · Scroll to zoom</div>
   </div>
 
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.webgpu.js",
+      "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.webgpu.js",
+      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.tsl.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
     }
   }
   </script>
+  
   <script type="module">
-    import * as THREE from 'three';
+    import * as THREE from 'three/webgpu';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-    const container = document.getElementById('canvas-container');
-    const stats = document.getElementById('stats');
-    const levelSelect = document.getElementById('level');
-    const speedSlider = document.getElementById('speed');
+    const container = document.getElementById('container');
+    let module, osdMesh, geometry, scene, camera, renderer, controls;
+    let basePos, animPos, animSpeed = 1;
+    let threeMesh, material;
+    let frameCount = 0, lastFpsUpdate = 0;
 
-    let module, mesh, geometry, scene, camera, renderer, controls;
-    let basePositions, animatedPositions;
-    let animSpeed = 1;
-
-    const cubePositions = new Float32Array([
-      -1, -1,  1,   1, -1,  1,   1,  1,  1,  -1,  1,  1,
-      -1, -1, -1,   1, -1, -1,   1,  1, -1,  -1,  1, -1
+    const cubePos = new Float32Array([
+      -1,-1,1, 1,-1,1, 1,1,1, -1,1,1,
+      -1,-1,-1, 1,-1,-1, 1,1,-1, -1,1,-1
     ]);
-    const cubeIndices = new Int32Array([
-      0, 1, 2, 3,  5, 4, 7, 6,  4, 0, 3, 7,
-      1, 5, 6, 2,  3, 2, 6, 7,  4, 5, 1, 0
+    const cubeIdx = new Int32Array([
+      0,1,2,3, 5,4,7,6, 4,0,3,7,
+      1,5,6,2, 3,2,6,7, 4,5,1,0
     ]);
 
     async function loadWasm() {
-      const script = document.createElement('script');
-      script.src = 'opensubdiv.js';
-      document.head.appendChild(script);
-      
-      await new Promise(resolve => script.onload = resolve);
+      const s = document.createElement('script');
+      s.src = 'opensubdiv.js';
+      document.head.appendChild(s);
+      await new Promise(r => { s.onload = r; });
       module = await OpenSubdiv();
     }
 
-    function createSubdividedMesh(level) {
-      if (mesh) mesh.delete();
+    function subdivide(level) {
+      if (osdMesh) osdMesh.delete();
       
-      const start = performance.now();
-      mesh = new module.SubdivisionMesh();
-      mesh.initFromQuads(cubePositions, cubeIndices, 6, level, module.BOUNDARY_EDGE_ONLY);
-      const initTime = performance.now() - start;
+      const t0 = performance.now();
+      osdMesh = new module.SubdivisionMesh();
+      osdMesh.initFromQuads(cubePos, cubeIdx, 6, level, module.BOUNDARY_EDGE_ONLY);
+      const dt = performance.now() - t0;
       
-      basePositions = new Float32Array(cubePositions);
-      animatedPositions = new Float32Array(cubePositions);
+      basePos = new Float32Array(cubePos);
+      animPos = new Float32Array(cubePos);
       
-      updateGeometry();
+      const pos = new Float32Array(osdMesh.getPositions());
+      const norm = new Float32Array(osdMesh.getNormals());
+      const idx = new Uint32Array(osdMesh.getIndices());
       
-      stats.innerHTML = `
-        <div>Level: <span class="stat-value">${level}</span></div>
-        <div>Vertices: <span class="stat-value">${mesh.getVertexCount().toLocaleString()}</span></div>
-        <div>Triangles: <span class="stat-value">${mesh.getTriangleCount().toLocaleString()}</span></div>
-        <div>Init: <span class="stat-value">${initTime.toFixed(1)}ms</span></div>
-      `;
-    }
-
-    function updateGeometry() {
-      const positions = new Float32Array(mesh.getPositions());
-      const normals = new Float32Array(mesh.getNormals());
-      const indices = new Uint32Array(mesh.getIndices());
+      // WebGPU requires new mesh when buffer sizes change
+      const posAttr = new THREE.BufferAttribute(pos, 3);
+      const normAttr = new THREE.BufferAttribute(norm, 3);
+      posAttr.setUsage(THREE.DynamicDrawUsage);
+      normAttr.setUsage(THREE.DynamicDrawUsage);
       
-      if (!geometry) {
-        geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
-        geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-      } else {
-        geometry.attributes.position.array.set(positions);
-        geometry.attributes.position.needsUpdate = true;
-        geometry.attributes.normal.array.set(normals);
-        geometry.attributes.normal.needsUpdate = true;
+      geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', posAttr);
+      geometry.setAttribute('normal', normAttr);
+      geometry.setIndex(new THREE.BufferAttribute(idx, 1));
+      
+      if (threeMesh && scene) {
+        scene.remove(threeMesh);
+        threeMesh.geometry.dispose();
+        threeMesh = new THREE.Mesh(geometry, material);
+        scene.add(threeMesh);
       }
+      
+      document.getElementById('verts').textContent = osdMesh.getVertexCount().toLocaleString();
+      document.getElementById('tris').textContent = osdMesh.getTriangleCount().toLocaleString();
+      document.getElementById('lvl').textContent = level;
     }
 
-    function setupScene() {
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    async function setup() {
+      renderer = new THREE.WebGPURenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      await renderer.init();
       container.appendChild(renderer.domElement);
 
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0d1117);
 
-      camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
-      camera.position.set(3, 2, 4);
+      camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+      camera.position.set(4, 3, 5);
 
       controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
 
-      const material = new THREE.MeshStandardMaterial({
-        color: 0x58a6ff,
-        metalness: 0.1,
-        roughness: 0.5,
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      pmremGenerator.compileEquirectangularShader();
+
+      new RGBELoader()
+        .load('studio_1k.hdr', (hdr) => {
+          hdr.mapping = THREE.EquirectangularReflectionMapping;
+          const envMap = pmremGenerator.fromEquirectangular(hdr).texture;
+          scene.environment = envMap;
+          scene.background = new THREE.Color(0xf5f5f7);
+          pmremGenerator.dispose();
+          hdr.dispose();
+        });
+
+      material = new THREE.MeshPhysicalMaterial({
+        color: 0xaaaaaa,
+        metalness: 1.0,
+        roughness: 0.15,
         side: THREE.DoubleSide
       });
-      const subdMesh = new THREE.Mesh(geometry, material);
-      scene.add(subdMesh);
-
-      const wireMat = new THREE.MeshBasicMaterial({
-        color: 0x30363d,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.3
-      });
-      scene.add(new THREE.Mesh(geometry, wireMat));
-
-      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-      dirLight.position.set(5, 10, 7);
-      scene.add(dirLight);
+      threeMesh = new THREE.Mesh(geometry, material);
+      scene.add(threeMesh);
     }
 
-    function animate(time) {
-      requestAnimationFrame(animate);
-      
-      if (animSpeed > 0) {
-        const t = time * 0.001 * animSpeed;
+    function render() {
+      if (animSpeed > 0 && threeMesh) {
+        const t = performance.now();
+        const s = t * 0.001 * animSpeed;
         for (let i = 0; i < 8; i++) {
-          const idx = i * 3;
-          animatedPositions[idx] = basePositions[idx] + Math.sin(t + i) * 0.15;
-          animatedPositions[idx + 1] = basePositions[idx + 1] + Math.cos(t * 1.3 + i * 0.5) * 0.15;
-          animatedPositions[idx + 2] = basePositions[idx + 2] + Math.sin(t * 0.7 + i * 0.3) * 0.15;
+          const j = i * 3;
+          animPos[j] = basePos[j] + Math.sin(s + i) * 0.12;
+          animPos[j+1] = basePos[j+1] + Math.cos(s * 1.3 + i * 0.5) * 0.12;
+          animPos[j+2] = basePos[j+2] + Math.sin(s * 0.7 + i * 0.3) * 0.12;
         }
-        mesh.updatePositions(animatedPositions);
-        
-        geometry.attributes.position.array.set(mesh.getPositions());
-        geometry.attributes.position.needsUpdate = true;
-        geometry.attributes.normal.array.set(mesh.getNormals());
-        geometry.attributes.normal.needsUpdate = true;
+        osdMesh.updatePositions(animPos);
+        const geom = threeMesh.geometry;
+        geom.attributes.position.array.set(osdMesh.getPositions());
+        geom.attributes.position.needsUpdate = true;
+        geom.attributes.normal.array.set(osdMesh.getNormals());
+        geom.attributes.normal.needsUpdate = true;
       }
       
       controls.update();
       renderer.render(scene, camera);
+      
+      // FPS counter
+      frameCount++;
+      const now = performance.now();
+      if (now - lastFpsUpdate >= 1000) {
+        document.getElementById('fps').textContent = frameCount;
+        frameCount = 0;
+        lastFpsUpdate = now;
+      }
     }
 
     async function init() {
       await loadWasm();
-      createSubdividedMesh(2);
-      setupScene();
-      animate(0);
+      subdivide(1);
+      await setup();
+      renderer.setAnimationLoop(render);
       
-      levelSelect.addEventListener('change', () => {
-        createSubdividedMesh(parseInt(levelSelect.value));
-      });
-      
-      speedSlider.addEventListener('input', () => {
-        animSpeed = parseFloat(speedSlider.value);
-      });
-      
+      document.getElementById('level').addEventListener('change', e => subdivide(+e.target.value));
+      document.getElementById('speed').addEventListener('input', e => { animSpeed = +e.target.value; });
       window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.aspect = innerWidth / innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(innerWidth, innerHeight);
       });
     }
 
-    init().catch(err => {
-      stats.textContent = 'Error: ' + err.message;
-      console.error(err);
-    });
+    init().catch(e => console.error(e));
   </script>
 </body>
 </html>

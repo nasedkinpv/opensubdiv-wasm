@@ -4,6 +4,8 @@ WebAssembly port of [Pixar's OpenSubdiv](https://github.com/PixarAnimationStudio
 
 High-performance Catmull-Clark subdivision surfaces with Three.js integration.
 
+**[Live Demo](https://nasedkinpv.github.io/opensubdiv-wasm/)** — WebGPU + HDR environment
+
 ## Features
 
 - Catmull-Clark subdivision (levels 1-5)
