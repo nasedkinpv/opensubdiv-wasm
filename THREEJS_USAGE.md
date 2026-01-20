@@ -168,9 +168,33 @@ class SubdivisionMesh {
   getNormals(): Float32Array;    // computed vertex normals
   getIndices(): Uint32Array;     // triangle indices
 
-  // UV support
-  setUVs(uvs: Float32Array, uvIndices: Int32Array): boolean;
-  getUVs(): Float32Array;
+  // Initialize with UV support (face-varying interpolation)
+  initFromQuadsWithUVs(
+    positions: Float32Array,
+    quadIndices: Int32Array,
+    numQuads: number,
+    subdivisionLevel: number,
+    boundaryInterpolation: number,
+    uvs: Float32Array,           // [u0,v0, u1,v1, ...] unique UV coordinates
+    uvIndices: Int32Array,       // UV index per face corner (same length as quadIndices)
+    numUVs: number               // number of unique UV coordinates
+  ): boolean;
+
+  initFromPolygonsWithUVs(
+    positions: Float32Array,
+    faceIndices: Int32Array,
+    faceSizes: Int32Array,
+    subdivisionLevel: number,
+    boundaryInterpolation: number,
+    uvs: Float32Array,
+    uvIndices: Int32Array,
+    numUVs: number
+  ): boolean;
+
+  // UV accessors (only valid after initFrom*WithUVs)
+  getUVs(): Float32Array;        // subdivided UV values
+  getUVIndices(): Uint32Array;   // UV index per triangle vertex
+  getUVCount(): number;          // number of subdivided UVs
   hasUVData(): boolean;
 
   // Info

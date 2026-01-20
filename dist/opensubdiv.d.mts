@@ -12,12 +12,32 @@ export interface WasmSubdivisionMesh {
     subdivisionLevel: number,
     boundaryInterpolation: number
   ): boolean;
+  initFromQuadsWithUVs(
+    positions: Float32Array,
+    indices: Int32Array,
+    numQuads: number,
+    subdivisionLevel: number,
+    boundaryInterpolation: number,
+    uvs: Float32Array,
+    uvIndices: Int32Array,
+    numUVs: number
+  ): boolean;
   initFromPolygons(
     positions: Float32Array,
     faceIndices: Int32Array,
     faceSizes: Int32Array,
     subdivisionLevel: number,
     boundaryInterpolation: number
+  ): boolean;
+  initFromPolygonsWithUVs(
+    positions: Float32Array,
+    faceIndices: Int32Array,
+    faceSizes: Int32Array,
+    subdivisionLevel: number,
+    boundaryInterpolation: number,
+    uvs: Float32Array,
+    uvIndices: Int32Array,
+    numUVs: number
   ): boolean;
   updatePositions(positions: Float32Array): void;
   getPositions(): Float32Array;
@@ -26,8 +46,9 @@ export interface WasmSubdivisionMesh {
   getVertexCount(): number;
   getTriangleCount(): number;
   getInputVertexCount(): number;
-  setUVs(uvs: Float32Array, uvIndices: Int32Array): boolean;
   getUVs(): Float32Array;
+  getUVIndices(): Uint32Array;
+  getUVCount(): number;
   hasUVData(): boolean;
   delete(): void;
 }

@@ -12,7 +12,9 @@ export declare const BOUNDARY_EDGE_AND_CORNER = 2;
 export type BoundaryInterpolation = typeof BOUNDARY_NONE | typeof BOUNDARY_EDGE_ONLY | typeof BOUNDARY_EDGE_AND_CORNER;
 interface WasmSubdivisionMesh {
     initFromQuads(positions: Float32Array, indices: Int32Array, numQuads: number, subdivisionLevel: number, boundaryInterpolation: number): boolean;
+    initFromQuadsWithUVs(positions: Float32Array, indices: Int32Array, numQuads: number, subdivisionLevel: number, boundaryInterpolation: number, uvs: Float32Array, uvIndices: Int32Array, numUVs: number): boolean;
     initFromPolygons(positions: Float32Array, faceIndices: Int32Array, faceSizes: Int32Array, subdivisionLevel: number, boundaryInterpolation: number): boolean;
+    initFromPolygonsWithUVs(positions: Float32Array, faceIndices: Int32Array, faceSizes: Int32Array, subdivisionLevel: number, boundaryInterpolation: number, uvs: Float32Array, uvIndices: Int32Array, numUVs: number): boolean;
     updatePositions(positions: Float32Array): void;
     getPositions(): Float32Array;
     getNormals(): Float32Array;
@@ -20,8 +22,9 @@ interface WasmSubdivisionMesh {
     getVertexCount(): number;
     getTriangleCount(): number;
     getInputVertexCount(): number;
-    setUVs(uvs: Float32Array, uvIndices: Int32Array): boolean;
     getUVs(): Float32Array;
+    getUVIndices(): Uint32Array;
+    getUVCount(): number;
     hasUVData(): boolean;
     delete(): void;
 }
@@ -48,7 +51,9 @@ export declare class SubdivisionSurface {
     private ensureInitialized;
     initFromQuadGeometry(geometry: BufferGeometry): boolean;
     initFromQuads(positions: Float32Array, quadIndices: Int32Array | Uint32Array): boolean;
+    initFromQuadsWithUVs(positions: Float32Array, quadIndices: Int32Array | Uint32Array, uvs: Float32Array, uvIndices: Int32Array | Uint32Array): boolean;
     initFromPolygons(positions: Float32Array, faceIndices: Int32Array | Uint32Array, faceSizes: Int32Array | Uint32Array): boolean;
+    initFromPolygonsWithUVs(positions: Float32Array, faceIndices: Int32Array | Uint32Array, faceSizes: Int32Array | Uint32Array, uvs: Float32Array, uvIndices: Int32Array | Uint32Array): boolean;
     updatePositions(positions: Float32Array): void;
     getPositions(): Float32Array;
     getNormals(): Float32Array;
@@ -56,8 +61,9 @@ export declare class SubdivisionSurface {
     getVertexCount(): number;
     getTriangleCount(): number;
     getInputVertexCount(): number;
-    setUVs(uvs: Float32Array, uvIndices: Int32Array | Uint32Array): boolean;
     getUVs(): Float32Array;
+    getUVIndices(): Uint32Array;
+    getUVCount(): number;
     hasUVData(): boolean;
     toBufferGeometry(THREE: typeof import('three'), existingGeometry?: BufferGeometry): BufferGeometry;
     updateBufferGeometry(geometry: BufferGeometry): void;

@@ -29,12 +29,32 @@ interface WasmSubdivisionMesh {
     subdivisionLevel: number,
     boundaryInterpolation: number
   ): boolean;
+  initFromQuadsWithUVs(
+    positions: Float32Array,
+    indices: Int32Array,
+    numQuads: number,
+    subdivisionLevel: number,
+    boundaryInterpolation: number,
+    uvs: Float32Array,
+    uvIndices: Int32Array,
+    numUVs: number
+  ): boolean;
   initFromPolygons(
     positions: Float32Array,
     faceIndices: Int32Array,
     faceSizes: Int32Array,
     subdivisionLevel: number,
     boundaryInterpolation: number
+  ): boolean;
+  initFromPolygonsWithUVs(
+    positions: Float32Array,
+    faceIndices: Int32Array,
+    faceSizes: Int32Array,
+    subdivisionLevel: number,
+    boundaryInterpolation: number,
+    uvs: Float32Array,
+    uvIndices: Int32Array,
+    numUVs: number
   ): boolean;
   updatePositions(positions: Float32Array): void;
   getPositions(): Float32Array;
@@ -43,8 +63,9 @@ interface WasmSubdivisionMesh {
   getVertexCount(): number;
   getTriangleCount(): number;
   getInputVertexCount(): number;
-  setUVs(uvs: Float32Array, uvIndices: Int32Array): boolean;
   getUVs(): Float32Array;
+  getUVIndices(): Uint32Array;
+  getUVCount(): number;
   hasUVData(): boolean;
   delete(): void;
 }
@@ -181,6 +202,49 @@ export class SubdivisionSurface {
     );
   }
 
+  initFromQuadsWithUVs(
+    positions: Float32Array,
+    quadIndices: Int32Array | Uint32Array,
+    uvs: Float32Array,
+    uvIndices: Int32Array | Uint32Array
+  ): boolean {
+    const mesh = this.ensureInitialized();
+
+    const indices =
+      quadIndices instanceof Int32Array
+        ? quadIndices
+        : new Int32Array(quadIndices);
+
+    const uvIdxs =
+      uvIndices instanceof Int32Array ? uvIndices : new Int32Array(uvIndices);
+
+    if (indices.length % 4 !== 0) {
+      throw new Error(
+        `Indices length (${indices.length}) must be a multiple of 4 for quad geometry`
+      );
+    }
+
+    if (uvIdxs.length !== indices.length) {
+      throw new Error(
+        `UV indices length (${uvIdxs.length}) must match quad indices length (${indices.length})`
+      );
+    }
+
+    const numQuads = indices.length / 4;
+    const numUVs = uvs.length / 2;
+
+    return mesh.initFromQuadsWithUVs(
+      positions,
+      indices,
+      numQuads,
+      this.level,
+      this.boundaryInterpolation,
+      uvs,
+      uvIdxs,
+      numUVs
+    );
+  }
+
   initFromPolygons(
     positions: Float32Array,
     faceIndices: Int32Array | Uint32Array,
@@ -201,6 +265,44 @@ export class SubdivisionSurface {
       sizes,
       this.level,
       this.boundaryInterpolation
+    );
+  }
+
+  initFromPolygonsWithUVs(
+    positions: Float32Array,
+    faceIndices: Int32Array | Uint32Array,
+    faceSizes: Int32Array | Uint32Array,
+    uvs: Float32Array,
+    uvIndices: Int32Array | Uint32Array
+  ): boolean {
+    const mesh = this.ensureInitialized();
+
+    const indices =
+      faceIndices instanceof Int32Array
+        ? faceIndices
+        : new Int32Array(faceIndices);
+    const sizes =
+      faceSizes instanceof Int32Array ? faceSizes : new Int32Array(faceSizes);
+    const uvIdxs =
+      uvIndices instanceof Int32Array ? uvIndices : new Int32Array(uvIndices);
+
+    if (uvIdxs.length !== indices.length) {
+      throw new Error(
+        `UV indices length (${uvIdxs.length}) must match face indices length (${indices.length})`
+      );
+    }
+
+    const numUVs = uvs.length / 2;
+
+    return mesh.initFromPolygonsWithUVs(
+      positions,
+      indices,
+      sizes,
+      this.level,
+      this.boundaryInterpolation,
+      uvs,
+      uvIdxs,
+      numUVs
     );
   }
 
@@ -232,15 +334,16 @@ export class SubdivisionSurface {
     return this.ensureInitialized().getInputVertexCount();
   }
 
-  setUVs(uvs: Float32Array, uvIndices: Int32Array | Uint32Array): boolean {
-    const mesh = this.ensureInitialized();
-    const indices =
-      uvIndices instanceof Int32Array ? uvIndices : new Int32Array(uvIndices);
-    return mesh.setUVs(uvs, indices);
-  }
-
   getUVs(): Float32Array {
     return new Float32Array(this.ensureInitialized().getUVs());
+  }
+
+  getUVIndices(): Uint32Array {
+    return new Uint32Array(this.ensureInitialized().getUVIndices());
+  }
+
+  getUVCount(): number {
+    return this.ensureInitialized().getUVCount();
   }
 
   hasUVData(): boolean {
@@ -263,8 +366,34 @@ export class SubdivisionSurface {
     geometry.setIndex(new THREE.BufferAttribute(indices, 1));
 
     if (mesh.hasUVData()) {
-      const uvs = this.getUVs();
-      geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      const uvData = mesh.getUVs();
+      const uvIndices = mesh.getUVIndices();
+      const numVerts = positions.length / 3;
+      const expandedUVs = new Float32Array(numVerts * 2);
+      const vertexUVAssigned = new Int32Array(numVerts).fill(-1);
+      let hasSeams = false;
+
+      for (let i = 0; i < indices.length; i++) {
+        const vertexIdx = indices[i];
+        const uvIdx = uvIndices[i];
+
+        if (vertexUVAssigned[vertexIdx] === -1) {
+          expandedUVs[vertexIdx * 2 + 0] = uvData[uvIdx * 2 + 0];
+          expandedUVs[vertexIdx * 2 + 1] = uvData[uvIdx * 2 + 1];
+          vertexUVAssigned[vertexIdx] = uvIdx;
+        } else if (vertexUVAssigned[vertexIdx] !== uvIdx) {
+          hasSeams = true;
+        }
+      }
+
+      if (hasSeams) {
+        console.warn(
+          'OpenSubdiv: UV seams detected. Indexed geometry cannot represent ' +
+            'face-varying UVs perfectly. Call geometry.toNonIndexed() for correct seams.'
+        );
+      }
+
+      geometry.setAttribute('uv', new THREE.BufferAttribute(expandedUVs, 2));
     }
 
     return geometry;
