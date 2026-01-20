@@ -12,11 +12,7 @@ WebAssembly port of OpenSubdiv - Open source libraries that implement high perfo
 
 OpenSubdiv is a set of open source libraries that implement high performance subdivision surface (subdiv) evaluation on massively parallel CPU and GPU architectures. This codepath is optimized for drawing deforming subdivs with static topology at interactive framerates. The resulting limit surface matches Pixar's Renderman to numerical precision.
 
-OpenSubdiv is covered by the Apache license, and is free to use for commercial or non-commercial use. This is the same code that Pixar uses internally for animated film production. Our intent is to encourage high performance accurate subdiv drawing by giving away the "good stuff".
-
-Feel free to use it and let us know what you think.
-
-For more details about OpenSubdiv, see [Pixar Graphics Technologies](http://graphics.pixar.com).
+For more details, please visit the web site [opensubdiv.org](https://opensubdiv.org).
 
 ## Documents
  * [User Documents](http://graphics.pixar.com/opensubdiv/docs/intro.html)
