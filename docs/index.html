@@ -3,338 +3,1315 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenSubdiv WASM</title>
+  <title>OpenSubdiv WASM Demo</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-      background: #f5f5f7;
-      color: #1d1d1f;
-      overflow: hidden;
+    :root {
+      --bg: #e6ddd0;
+      --bg-deep: #d7cab8;
+      --panel: rgba(255, 248, 239, 0.9);
+      --panel-border: rgba(94, 72, 46, 0.12);
+      --ink: #231c14;
+      --muted: #706455;
+      --line: rgba(91, 73, 51, 0.12);
+      --accent: #c46336;
+      --accent-deep: #8f4123;
+      --surface: #7f99ac;
+      --surface-deep: #506475;
+      --cage: #bc6438;
+      --shadow: 0 26px 72px rgba(51, 36, 20, 0.18);
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 999px;
     }
-    #container { width: 100vw; height: 100vh; display: block; }
-    
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "SF Pro Text", "Segoe UI", "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 244, 227, 0.9), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(209, 189, 164, 0.5), transparent 36%),
+        linear-gradient(160deg, var(--bg), var(--bg-deep));
+      color: var(--ink);
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    #container {
+      position: fixed;
+      inset: 0;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #statusPill,
+    #menuButton,
+    #mobileHud,
     #panel {
-      position: absolute;
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+
+    #statusPill {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 30;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--panel-border);
+      background: rgba(255, 249, 242, 0.88);
+      box-shadow: 0 14px 38px rgba(48, 35, 23, 0.14);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    #statusPill[data-tone="ready"] {
+      color: var(--accent-deep);
+    }
+
+    #statusPill[data-tone="error"] {
+      color: #912f2f;
+    }
+
+    #menuButton {
+      position: fixed;
       top: 24px;
       left: 24px;
-      background: rgba(255, 255, 255, 0.92);
-      padding: 24px;
-      border-radius: 16px;
-      width: 260px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-width: 104px;
+      padding: 11px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.36);
+      border-radius: var(--radius-sm);
+      background: rgba(36, 28, 20, 0.84);
+      color: #f8efe6;
+      box-shadow: 0 18px 48px rgba(22, 14, 8, 0.24);
+      cursor: pointer;
     }
-    
-    h1 { 
-      font-size: 20px; 
-      font-weight: 600;
-      letter-spacing: -0.02em;
+
+    #scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: rgba(28, 20, 14, 0.32);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
     }
-    
-    .tagline { 
-      color: #86868b; 
-      font-size: 13px; 
-      margin-top: 2px;
+
+    #panel {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 25;
+      width: min(360px, calc(100vw - 48px));
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-xl);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 22px;
     }
-    
-    .controls {
-      margin-top: 20px;
+
+    #panel::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    #panel::-webkit-scrollbar-thumb {
+      background: rgba(92, 74, 53, 0.16);
+      border-radius: 999px;
+    }
+
+    .panel-header {
+      display: flex;
+      gap: 16px;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-deep);
+    }
+
+    h1 {
+      margin-top: 8px;
+      font-size: 30px;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .tagline {
+      margin-top: 10px;
+      max-width: 28ch;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .close-button {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 12px;
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .section {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-title {
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .field {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 8px;
     }
-    
-    .field label {
-      display: block;
+
+    .field label,
+    .toggle span:first-child {
       font-size: 11px;
-      font-weight: 500;
-      color: #86868b;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      letter-spacing: 0.02em;
-      margin-bottom: 6px;
     }
-    
+
+    .helper {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field--wide {
+      grid-column: 1 / -1;
+    }
+
     select {
       width: 100%;
-      padding: 10px 12px;
-      font-size: 15px;
-      border: none;
-      border-radius: 8px;
-      background: #f5f5f7;
-      color: #1d1d1f;
-      appearance: none;
+      padding: 11px 13px;
+      border: 1px solid rgba(85, 67, 47, 0.08);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
       cursor: pointer;
     }
-    
+
     input[type="range"] {
       width: 100%;
-      height: 4px;
-      border-radius: 2px;
-      background: #d2d2d7;
-      appearance: none;
+      accent-color: var(--accent);
       cursor: pointer;
     }
-    
-    input[type="range"]::-webkit-slider-thumb {
-      appearance: none;
+
+    .value-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 8px;
+      padding: 4px 9px;
+      border-radius: var(--radius-sm);
+      background: rgba(196, 99, 54, 0.12);
+      color: var(--accent-deep);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .toggle {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 14px;
+      border: 1px solid rgba(85, 67, 47, 0.08);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.62);
+    }
+
+    .toggle input {
       width: 18px;
       height: 18px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      accent-color: var(--accent);
       cursor: pointer;
     }
-    
-    .stats {
-      margin-top: 20px;
-      padding-top: 16px;
-      border-top: 1px solid #e8e8ed;
+
+    .stat-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
-    
-    .stat {
-      font-size: 11px;
-      color: #86868b;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+
+    .stat-card {
+      padding: 13px;
+      border: 1px solid rgba(85, 67, 47, 0.08);
+      border-radius: var(--radius-md);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(249, 241, 230, 0.72));
     }
-    
-    .stat span {
+
+    .stat-card span {
       display: block;
-      font-size: 17px;
-      font-weight: 500;
-      color: #1d1d1f;
-      margin-top: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .stat-card strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: -0.04em;
       font-variant-numeric: tabular-nums;
     }
-    
-    .links {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #e8e8ed;
-      font-size: 12px;
+
+    .footer-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
     }
-    
+
+    .footer-meta div {
+      padding: 12px 13px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(85, 67, 47, 0.08);
+    }
+
+    .footer-meta span {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .footer-meta strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    .links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+    }
+
     .links a {
-      color: #0066cc;
+      color: var(--accent-deep);
       text-decoration: none;
     }
-    
-    .links a:hover { text-decoration: underline; }
-    
-    .hint {
-      margin-top: 12px;
-      font-size: 11px;
-      color: #86868b;
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+
+    #mobileHud {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      z-index: 18;
+      display: none;
+      gap: 10px;
+      width: min(calc(100vw - 24px), 540px);
+      padding: 11px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(28, 22, 17, 0.76);
+      box-shadow: 0 18px 48px rgba(16, 12, 8, 0.28);
+      transform: translateX(-50%);
+    }
+
+    .hud-chip {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f4ebdf;
+    }
+
+    .hud-chip span {
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(244, 235, 223, 0.66);
+    }
+
+    .hud-chip strong {
+      display: block;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 900px) {
+      #menuButton,
+      #mobileHud {
+        display: flex;
+      }
+
+      #statusPill {
+        top: 24px;
+        right: 20px;
+        max-width: calc(100vw - 164px);
+      }
+
+      #panel {
+        top: auto;
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+        max-height: min(72vh, 560px);
+        transform: translateY(calc(100% + 24px));
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 200ms ease, opacity 200ms ease;
+      }
+
+      body.panel-open #panel {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      body.panel-open #scrim {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .close-button {
+        display: inline-flex;
+      }
+    }
+
+    @media (max-width: 620px) {
+      #panel {
+        padding: 18px;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      .control-grid,
+      .stat-grid,
+      .footer-meta {
+        grid-template-columns: 1fr;
+      }
+
+      #mobileHud {
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .hud-chip {
+        padding: 8px 9px;
+      }
     }
   </style>
 </head>
 <body>
   <div id="container"></div>
-  
-  <div id="panel">
-    <h1>OpenSubdiv WASM</h1>
-    <div class="tagline">Catmull-Clark Subdivision</div>
-    
-    <div class="controls">
-      <div class="field">
-        <label>Level</label>
-        <select id="level">
-          <option value="1" selected>1 — Low</option>
-          <option value="2">2 — Medium</option>
-          <option value="3">3 — High</option>
-          <option value="4">4 — Ultra</option>
-        </select>
+
+  <div id="statusPill" data-tone="loading">Booting demo...</div>
+  <button id="menuButton" type="button" aria-controls="panel" aria-expanded="false">Controls</button>
+  <div id="scrim"></div>
+
+  <aside id="panel" aria-hidden="false">
+    <div class="panel-header">
+      <div>
+        <p class="eyebrow">OpenSubdiv WASM</p>
+        <h1>Subdivision Playground</h1>
+        <p class="tagline">WebGPU demo with synced release assets, richer mesh presets, and live subdivision stats.</p>
       </div>
-      
+      <button id="closeButton" class="close-button" type="button">Close</button>
+    </div>
+
+    <div class="section">
       <div class="field">
-        <label>Animation</label>
-        <input type="range" id="speed" min="0" max="2" step="0.1" value="1">
+        <label for="model">Model</label>
+        <select id="model"></select>
+      </div>
+      <p id="modelSummary" class="helper"></p>
+    </div>
+
+    <div class="section">
+      <div class="control-grid">
+        <div class="field">
+          <label for="level">Level</label>
+          <select id="level">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="boundary">Boundary</label>
+          <select id="boundary">
+            <option value="0">None</option>
+            <option value="1" selected>Edge only</option>
+            <option value="2">Edge and corner</option>
+          </select>
+        </div>
+
+        <div class="field field--wide">
+          <label for="speed">Animation <span id="speedValue" class="value-pill">0.90x</span></label>
+          <input id="speed" type="range" min="0" max="2" step="0.05" value="0.9">
+        </div>
+
+        <label class="toggle field field--wide" for="showCage">
+          <span>Show control cage</span>
+          <input id="showCage" type="checkbox" checked>
+        </label>
+      </div>
+      <p class="helper">Closed cages ignore most boundary settings. Open cages such as the sheet show the difference immediately.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Stats</div>
+      <div class="stat-grid">
+        <div class="stat-card"><span>Control verts</span><strong id="inputVerts">-</strong></div>
+        <div class="stat-card"><span>Control faces</span><strong id="inputFaces">-</strong></div>
+        <div class="stat-card"><span>Surface verts</span><strong id="outputVerts">-</strong></div>
+        <div class="stat-card"><span>Surface tris</span><strong id="outputTris">-</strong></div>
+        <div class="stat-card"><span>Build time</span><strong id="buildMs">-</strong></div>
+        <div class="stat-card"><span>Update time</span><strong id="updateMs">-</strong></div>
+        <div class="stat-card"><span>FPS</span><strong id="fps">-</strong></div>
+        <div class="stat-card"><span>Renderer</span><strong>WebGPU</strong></div>
       </div>
     </div>
-    
-    <div class="stats">
-      <div class="stat">Vertices<span id="verts">—</span></div>
-      <div class="stat">Triangles<span id="tris">—</span></div>
-      <div class="stat">Level<span id="lvl">—</span></div>
-      <div class="stat">FPS<span id="fps">—</span></div>
+
+    <div class="section">
+      <div class="footer-meta">
+        <div><span>Package</span><strong id="packageVersion">-</strong></div>
+        <div><span>Three</span><strong id="threeVersion">-</strong></div>
+      </div>
+      <p id="buildStamp" class="helper">Waiting for synced demo metadata...</p>
+      <div class="links">
+        <a href="https://github.com/nasedkinpv/opensubdiv-wasm">GitHub</a>
+        <a href="https://github.com/nasedkinpv/opensubdiv-wasm/releases">Releases</a>
+        <a href="https://www.npmjs.com/package/@nasedkinpv/opensubdiv-wasm">npm</a>
+      </div>
+      <p class="helper">Drag to orbit. Scroll to zoom. On mobile the control panel stays collapsed by default so it does not cover the render.</p>
     </div>
-    
-    <div class="links">
-      <a href="https://github.com/nasedkinpv/opensubdiv-wasm">GitHub</a> · 
-      <a href="https://www.npmjs.com/package/@nasedkinpv/opensubdiv-wasm">npm</a>
-    </div>
-    
-    <div class="hint">Drag to rotate · Scroll to zoom</div>
+  </aside>
+
+  <div id="mobileHud" aria-hidden="true">
+    <div class="hud-chip"><span>Model</span><strong id="hudModel">-</strong></div>
+    <div class="hud-chip"><span>Surface</span><strong id="hudVerts">-</strong></div>
+    <div class="hud-chip"><span>FPS</span><strong id="hudFps">-</strong></div>
   </div>
 
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.webgpu.js",
-      "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.webgpu.js",
-      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.tsl.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.webgpu.js",
+      "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.webgpu.js",
+      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.tsl.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/"
     }
   }
   </script>
-  
+
   <script type="module">
     import * as THREE from 'three/webgpu';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-    const container = document.getElementById('container');
-    let module, osdMesh, geometry, scene, camera, renderer, controls;
-    let basePos, animPos, animSpeed = 1;
-    let threeMesh, material;
-    let frameCount = 0, lastFpsUpdate = 0;
+    const TAU = Math.PI * 2;
+    const mobileQuery = window.matchMedia('(max-width: 900px)');
 
-    const cubePos = new Float32Array([
-      -1,-1,1, 1,-1,1, 1,1,1, -1,1,1,
-      -1,-1,-1, 1,-1,-1, 1,1,-1, -1,1,-1
-    ]);
-    const cubeIdx = new Int32Array([
-      0,1,2,3, 5,4,7,6, 4,0,3,7,
-      1,5,6,2, 3,2,6,7, 4,5,1,0
-    ]);
+    const dom = {
+      container: document.getElementById('container'),
+      statusPill: document.getElementById('statusPill'),
+      menuButton: document.getElementById('menuButton'),
+      closeButton: document.getElementById('closeButton'),
+      scrim: document.getElementById('scrim'),
+      panel: document.getElementById('panel'),
+      model: document.getElementById('model'),
+      modelSummary: document.getElementById('modelSummary'),
+      level: document.getElementById('level'),
+      boundary: document.getElementById('boundary'),
+      speed: document.getElementById('speed'),
+      speedValue: document.getElementById('speedValue'),
+      showCage: document.getElementById('showCage'),
+      inputVerts: document.getElementById('inputVerts'),
+      inputFaces: document.getElementById('inputFaces'),
+      outputVerts: document.getElementById('outputVerts'),
+      outputTris: document.getElementById('outputTris'),
+      buildMs: document.getElementById('buildMs'),
+      updateMs: document.getElementById('updateMs'),
+      fps: document.getElementById('fps'),
+      packageVersion: document.getElementById('packageVersion'),
+      threeVersion: document.getElementById('threeVersion'),
+      buildStamp: document.getElementById('buildStamp'),
+      hudModel: document.getElementById('hudModel'),
+      hudVerts: document.getElementById('hudVerts'),
+      hudFps: document.getElementById('hudFps'),
+    };
 
-    async function loadWasm() {
-      const s = document.createElement('script');
-      s.src = 'opensubdiv.js';
-      document.head.appendChild(s);
-      await new Promise(r => { s.onload = r; });
-      module = await OpenSubdiv();
+    const state = {
+      assetVersion: 'dev',
+      module: null,
+      renderer: null,
+      scene: null,
+      camera: null,
+      controls: null,
+      surfaceMesh: null,
+      cageLines: null,
+      osdMesh: null,
+      modelKey: 'torus',
+      level: 2,
+      boundary: 1,
+      animationSpeed: 0.9,
+      showCage: true,
+      basePositions: null,
+      animatedPositions: null,
+      edgePairs: null,
+      cageLinePositions: null,
+      buildMs: 0,
+      updateMs: 0,
+      fps: 0,
+      frames: 0,
+      updateSamples: 0,
+      updateAccumulator: 0,
+      lastStatRefresh: performance.now(),
+    };
+
+    function createCubeModel() {
+      return {
+        label: 'Soft Cube',
+        summary: 'Eight control verts and six quads. A fast closed baseline for comparing pure Catmull-Clark smoothing.',
+        closed: true,
+        camera: {
+          position: [4.5, 2.8, 5.7],
+          target: [0, 0, 0],
+        },
+        positions: new Float32Array([
+          -1.0, -1.0,  1.0,
+           1.0, -1.0,  1.0,
+           1.0,  1.0,  1.0,
+          -1.0,  1.0,  1.0,
+          -1.0, -1.0, -1.0,
+           1.0, -1.0, -1.0,
+           1.0,  1.0, -1.0,
+          -1.0,  1.0, -1.0,
+        ]),
+        quads: new Int32Array([
+          0, 1, 2, 3,
+          5, 4, 7, 6,
+          4, 0, 3, 7,
+          1, 5, 6, 2,
+          3, 2, 6, 7,
+          4, 5, 1, 0,
+        ]),
+        animate(time, base, out, speed) {
+          const phase = time * 0.001 * speed;
+
+          for (let i = 0; i < base.length; i += 3) {
+            const vertexId = i / 3;
+            out[i] = base[i] + Math.sin(phase * 0.9 + vertexId * 0.7) * 0.12;
+            out[i + 1] = base[i + 1] + Math.cos(phase * 1.25 + vertexId * 0.45) * 0.14;
+            out[i + 2] = base[i + 2] + Math.sin(phase * 0.6 + vertexId * 0.35) * 0.1;
+          }
+        },
+      };
     }
 
-    function subdivide(level) {
-      if (osdMesh) osdMesh.delete();
-      
-      const t0 = performance.now();
-      osdMesh = new module.SubdivisionMesh();
-      osdMesh.initFromQuads(cubePos, cubeIdx, 6, level, module.BOUNDARY_EDGE_ONLY);
-      const dt = performance.now() - t0;
-      
-      basePos = new Float32Array(cubePos);
-      animPos = new Float32Array(cubePos);
-      
-      const pos = new Float32Array(osdMesh.getPositions());
-      const norm = new Float32Array(osdMesh.getNormals());
-      const idx = new Uint32Array(osdMesh.getIndices());
-      
-      // WebGPU requires new mesh when buffer sizes change
-      const posAttr = new THREE.BufferAttribute(pos, 3);
-      const normAttr = new THREE.BufferAttribute(norm, 3);
-      posAttr.setUsage(THREE.DynamicDrawUsage);
-      normAttr.setUsage(THREE.DynamicDrawUsage);
-      
-      geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', posAttr);
-      geometry.setAttribute('normal', normAttr);
-      geometry.setIndex(new THREE.BufferAttribute(idx, 1));
-      
-      if (threeMesh && scene) {
-        scene.remove(threeMesh);
-        threeMesh.geometry.dispose();
-        threeMesh = new THREE.Mesh(geometry, material);
-        scene.add(threeMesh);
+    function createRippleSheetModel() {
+      const columns = 6;
+      const rows = 6;
+      const positions = new Float32Array(columns * rows * 3);
+      const quads = new Int32Array((columns - 1) * (rows - 1) * 4);
+
+      let vertexOffset = 0;
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns; col++) {
+          const u = col / (columns - 1);
+          const v = row / (rows - 1);
+          const x = (u - 0.5) * 4.8;
+          const z = (v - 0.5) * 4.8;
+          const radius = Math.hypot(x, z);
+          const y = Math.max(0, 0.24 - radius * 0.03);
+
+          positions[vertexOffset++] = x;
+          positions[vertexOffset++] = y;
+          positions[vertexOffset++] = z;
+        }
       }
-      
-      document.getElementById('verts').textContent = osdMesh.getVertexCount().toLocaleString();
-      document.getElementById('tris').textContent = osdMesh.getTriangleCount().toLocaleString();
-      document.getElementById('lvl').textContent = level;
+
+      let quadOffset = 0;
+      for (let row = 0; row < rows - 1; row++) {
+        for (let col = 0; col < columns - 1; col++) {
+          const topLeft = row * columns + col;
+          const topRight = topLeft + 1;
+          const bottomLeft = topLeft + columns;
+          const bottomRight = bottomLeft + 1;
+
+          quads[quadOffset++] = topLeft;
+          quads[quadOffset++] = topRight;
+          quads[quadOffset++] = bottomRight;
+          quads[quadOffset++] = bottomLeft;
+        }
+      }
+
+      return {
+        label: 'Ripple Sheet',
+        summary: 'Open quad sheet with visible borders. This is the easiest preset for seeing boundary interpolation affect edge tension.',
+        closed: false,
+        camera: {
+          position: [4.4, 3.2, 5.8],
+          target: [0, 0.1, 0],
+        },
+        positions,
+        quads,
+        animate(time, base, out, speed) {
+          const phase = time * 0.001 * speed;
+
+          for (let i = 0; i < base.length; i += 3) {
+            const x = base[i];
+            const z = base[i + 2];
+            const falloff = Math.max(0.18, 1 - Math.hypot(x, z) / 4.4);
+
+            out[i] = base[i] + Math.sin(phase * 0.75 + z * 0.48) * 0.05 * falloff;
+            out[i + 1] = base[i + 1] + Math.sin(phase * 2.1 + x * 0.9 + z * 0.55) * 0.26 * falloff;
+            out[i + 2] = base[i + 2] + Math.cos(phase * 0.85 + x * 0.42) * 0.045 * falloff;
+          }
+        },
+      };
     }
 
-    async function setup() {
-      renderer = new THREE.WebGPURenderer({ antialias: true });
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-      renderer.setSize(innerWidth, innerHeight);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.0;
-      await renderer.init();
-      container.appendChild(renderer.domElement);
+    function createTorusModel() {
+      const majorSegments = 12;
+      const minorSegments = 8;
+      const majorRadius = 2.2;
+      const minorRadius = 0.78;
+      const positions = new Float32Array(majorSegments * minorSegments * 3);
+      const quads = new Int32Array(majorSegments * minorSegments * 4);
 
-      scene = new THREE.Scene();
+      let vertexOffset = 0;
+      for (let majorIndex = 0; majorIndex < majorSegments; majorIndex++) {
+        const u = (majorIndex / majorSegments) * TAU;
 
-      camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
-      camera.position.set(4, 3, 5);
+        for (let minorIndex = 0; minorIndex < minorSegments; minorIndex++) {
+          const v = (minorIndex / minorSegments) * TAU;
+          const ringRadius = majorRadius + Math.cos(v) * minorRadius;
 
-      controls = new OrbitControls(camera, renderer.domElement);
+          positions[vertexOffset++] = Math.cos(u) * ringRadius;
+          positions[vertexOffset++] = Math.sin(v) * minorRadius;
+          positions[vertexOffset++] = Math.sin(u) * ringRadius;
+        }
+      }
 
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
-      pmremGenerator.compileEquirectangularShader();
+      let quadOffset = 0;
+      for (let majorIndex = 0; majorIndex < majorSegments; majorIndex++) {
+        const nextMajor = (majorIndex + 1) % majorSegments;
 
-      new RGBELoader()
-        .load('studio_1k.hdr', (hdr) => {
-          hdr.mapping = THREE.EquirectangularReflectionMapping;
-          const envMap = pmremGenerator.fromEquirectangular(hdr).texture;
-          scene.environment = envMap;
-          scene.background = new THREE.Color(0xf5f5f7);
-          pmremGenerator.dispose();
-          hdr.dispose();
+        for (let minorIndex = 0; minorIndex < minorSegments; minorIndex++) {
+          const nextMinor = (minorIndex + 1) % minorSegments;
+          const a = majorIndex * minorSegments + minorIndex;
+          const b = nextMajor * minorSegments + minorIndex;
+          const c = nextMajor * minorSegments + nextMinor;
+          const d = majorIndex * minorSegments + nextMinor;
+
+          quads[quadOffset++] = a;
+          quads[quadOffset++] = b;
+          quads[quadOffset++] = c;
+          quads[quadOffset++] = d;
+        }
+      }
+
+      return {
+        label: 'Breathing Torus',
+        summary: 'Dense closed cage with enough control faces to make the live build and update timings meaningful.',
+        closed: true,
+        camera: {
+          position: [0.5, 2.9, 6.8],
+          target: [0, 0, 0],
+        },
+        positions,
+        quads,
+        animate(time, _base, out, speed) {
+          const phase = time * 0.001 * speed;
+          let offset = 0;
+
+          for (let majorIndex = 0; majorIndex < majorSegments; majorIndex++) {
+            const u = (majorIndex / majorSegments) * TAU;
+            const majorPulse = 1 + Math.sin(phase * 0.85 + u * 2.1) * 0.05;
+            const localMajor = majorRadius * majorPulse;
+            const twist = Math.sin(phase * 0.22 + u * 1.3) * 0.03;
+
+            for (let minorIndex = 0; minorIndex < minorSegments; minorIndex++) {
+              const v = (minorIndex / minorSegments) * TAU;
+              const localMinor = minorRadius * (1 + Math.sin(phase * 1.5 + u * 1.6 + v * 2.0) * 0.09);
+              const bentMinor = v + twist;
+              const ringRadius = localMajor + Math.cos(bentMinor) * localMinor;
+
+              out[offset++] = Math.cos(u) * ringRadius;
+              out[offset++] = Math.sin(bentMinor) * localMinor + Math.cos(phase * 1.1 + u * 3.0) * 0.06;
+              out[offset++] = Math.sin(u) * ringRadius;
+            }
+          }
+        },
+      };
+    }
+
+    const MODELS = {
+      cube: createCubeModel(),
+      sheet: createRippleSheetModel(),
+      torus: createTorusModel(),
+    };
+
+    function formatCount(value) {
+      return Number(value).toLocaleString();
+    }
+
+    function formatCompact(value) {
+      return new Intl.NumberFormat('en', {
+        notation: 'compact',
+        maximumFractionDigits: value >= 1000 ? 1 : 0,
+      }).format(value);
+    }
+
+    function formatMs(value) {
+      return `${value.toFixed(value >= 10 ? 1 : 2)} ms`;
+    }
+
+    function formatBuildStamp(isoString) {
+      if (!isoString) {
+        return 'GitHub Pages assets sync automatically from dist/';
+      }
+
+      const date = new Date(isoString);
+      return `GitHub Pages assets sync automatically from dist/ - ${date.toLocaleString()}`;
+    }
+
+    function setStatus(message, tone = 'loading') {
+      dom.statusPill.textContent = message;
+      dom.statusPill.dataset.tone = tone;
+    }
+
+    function setPanelOpen(nextOpen) {
+      const isOpen = mobileQuery.matches ? nextOpen : true;
+
+      document.body.classList.toggle('panel-open', mobileQuery.matches && isOpen);
+      dom.menuButton.setAttribute('aria-expanded', String(mobileQuery.matches && isOpen));
+      dom.panel.setAttribute('aria-hidden', String(!(mobileQuery.matches ? isOpen : true)));
+    }
+
+    function syncResponsivePanel() {
+      if (mobileQuery.matches) {
+        setPanelOpen(false);
+      } else {
+        document.body.classList.remove('panel-open');
+        dom.menuButton.setAttribute('aria-expanded', 'false');
+        dom.panel.setAttribute('aria-hidden', 'false');
+      }
+    }
+
+    function buildEdgePairs(quadIndices) {
+      const pairs = new Int32Array((quadIndices.length / 4) * 8);
+      let offset = 0;
+
+      for (let i = 0; i < quadIndices.length; i += 4) {
+        const a = quadIndices[i];
+        const b = quadIndices[i + 1];
+        const c = quadIndices[i + 2];
+        const d = quadIndices[i + 3];
+
+        pairs[offset++] = a;
+        pairs[offset++] = b;
+        pairs[offset++] = b;
+        pairs[offset++] = c;
+        pairs[offset++] = c;
+        pairs[offset++] = d;
+        pairs[offset++] = d;
+        pairs[offset++] = a;
+      }
+
+      return pairs;
+    }
+
+    function fillEdgePositions(target, controlPositions, edgePairs) {
+      for (let i = 0; i < edgePairs.length; i++) {
+        const sourceIndex = edgePairs[i] * 3;
+        const targetIndex = i * 3;
+
+        target[targetIndex] = controlPositions[sourceIndex];
+        target[targetIndex + 1] = controlPositions[sourceIndex + 1];
+        target[targetIndex + 2] = controlPositions[sourceIndex + 2];
+      }
+    }
+
+    function updateSpeedLabel() {
+      dom.speedValue.textContent = `${state.animationSpeed.toFixed(2)}x`;
+    }
+
+    function updateHud(modelLabel, surfaceVerts) {
+      dom.hudModel.textContent = modelLabel;
+      dom.hudVerts.textContent = surfaceVerts > 0 ? formatCompact(surfaceVerts) : '-';
+      dom.hudFps.textContent = state.fps > 0 ? String(state.fps) : '-';
+    }
+
+    function updateStats() {
+      const model = MODELS[state.modelKey];
+      const inputVerts = state.basePositions ? state.basePositions.length / 3 : 0;
+      const inputFaces = model.quads.length / 4;
+      const outputVerts = state.osdMesh ? state.osdMesh.getVertexCount() : 0;
+      const outputTris = state.osdMesh ? state.osdMesh.getTriangleCount() : 0;
+
+      dom.inputVerts.textContent = formatCount(inputVerts);
+      dom.inputFaces.textContent = formatCount(inputFaces);
+      dom.outputVerts.textContent = formatCount(outputVerts);
+      dom.outputTris.textContent = formatCount(outputTris);
+      dom.buildMs.textContent = state.buildMs > 0 ? formatMs(state.buildMs) : '-';
+      dom.updateMs.textContent = state.updateMs > 0 ? formatMs(state.updateMs) : state.animationSpeed > 0 ? '...' : 'Idle';
+      dom.fps.textContent = state.fps > 0 ? String(state.fps) : '-';
+
+      const boundaryHint = model.closed
+        ? 'Closed cage - boundary mode mostly acts as a no-op.'
+        : 'Open cage - boundary mode changes how the border stays pinned.';
+
+      dom.modelSummary.textContent = `${model.summary} ${boundaryHint}`;
+      updateHud(model.label, outputVerts);
+    }
+
+    function applyCamera(preset) {
+      state.camera.position.set(...preset.position);
+      state.controls.target.set(...preset.target);
+      state.controls.update();
+    }
+
+    async function loadMeta() {
+      try {
+        const response = await fetch(`./demo-meta.json?ts=${Date.now()}`, {
+          cache: 'no-store',
         });
 
-      material = new THREE.MeshPhysicalMaterial({
-        color: 0xaaaaaa,
-        metalness: 1.0,
-        roughness: 0.15,
-        side: THREE.DoubleSide
-      });
-      threeMesh = new THREE.Mesh(geometry, material);
-      scene.add(threeMesh);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        return await response.json();
+      } catch (_error) {
+        return {
+          packageVersion: 'dev',
+          assetVersion: 'dev',
+          threeVersion: '0.183.2',
+          builtAt: null,
+        };
+      }
     }
 
-    function render() {
-      if (animSpeed > 0 && threeMesh) {
-        const t = performance.now();
-        const s = t * 0.001 * animSpeed;
-        for (let i = 0; i < 8; i++) {
-          const j = i * 3;
-          animPos[j] = basePos[j] + Math.sin(s + i) * 0.12;
-          animPos[j+1] = basePos[j+1] + Math.cos(s * 1.3 + i * 0.5) * 0.12;
-          animPos[j+2] = basePos[j+2] + Math.sin(s * 0.7 + i * 0.3) * 0.12;
+    async function loadWasm() {
+      const versionSuffix = `?v=${encodeURIComponent(state.assetVersion)}`;
+      const { default: OpenSubdiv } = await import(`./opensubdiv.mjs${versionSuffix}`);
+
+      state.module = await OpenSubdiv({
+        locateFile: (path) => `./${path}${versionSuffix}`,
+      });
+    }
+
+    async function loadEnvironment() {
+      try {
+        const pmremGenerator = new THREE.PMREMGenerator(state.renderer);
+        const hdr = await new RGBELoader().loadAsync('studio_1k.hdr');
+
+        hdr.mapping = THREE.EquirectangularReflectionMapping;
+
+        const envMap = pmremGenerator.fromEquirectangular(hdr).texture;
+        state.scene.environment = envMap;
+
+        hdr.dispose();
+        pmremGenerator.dispose();
+      } catch (error) {
+        console.warn('Environment map failed to load:', error);
+      }
+    }
+
+    async function setupScene() {
+      state.renderer = new THREE.WebGPURenderer({ antialias: true });
+      state.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      state.renderer.setSize(window.innerWidth, window.innerHeight);
+      state.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      state.renderer.toneMappingExposure = 1.12;
+      await state.renderer.init();
+
+      dom.container.appendChild(state.renderer.domElement);
+
+      state.scene = new THREE.Scene();
+      state.scene.background = new THREE.Color(0xe8dfd1);
+      state.scene.fog = new THREE.FogExp2(0xe8dfd1, 0.045);
+
+      state.camera = new THREE.PerspectiveCamera(
+        42,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+
+      state.controls = new OrbitControls(state.camera, state.renderer.domElement);
+      state.controls.enableDamping = true;
+      state.controls.enablePan = false;
+      state.controls.minDistance = 2.5;
+      state.controls.maxDistance = 14;
+
+      const hemisphere = new THREE.HemisphereLight(0xfff3e0, 0xd6b896, 1.25);
+      const keyLight = new THREE.DirectionalLight(0xfff1da, 1.7);
+      keyLight.position.set(5.5, 8, 4.5);
+      const fillLight = new THREE.DirectionalLight(0xc7dbf3, 0.55);
+      fillLight.position.set(-4.5, 2.5, -5.5);
+
+      const floor = new THREE.Mesh(
+        new THREE.CircleGeometry(9, 96),
+        new THREE.MeshStandardMaterial({
+          color: 0xf2e6d5,
+          roughness: 0.94,
+          metalness: 0.02,
+        })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -1.78;
+
+      const floorRing = new THREE.Mesh(
+        new THREE.TorusGeometry(4.7, 0.05, 12, 64),
+        new THREE.MeshBasicMaterial({
+          color: 0xcdb89d,
+          transparent: true,
+          opacity: 0.28,
+        })
+      );
+      floorRing.rotation.x = Math.PI / 2;
+      floorRing.position.y = -1.76;
+
+      const surfaceMaterial = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(varToHex('--surface')),
+        metalness: 0.22,
+        roughness: 0.22,
+        clearcoat: 0.8,
+        clearcoatRoughness: 0.24,
+      });
+
+      state.surfaceMesh = new THREE.Mesh(new THREE.BufferGeometry(), surfaceMaterial);
+      state.cageLines = new THREE.LineSegments(
+        new THREE.BufferGeometry(),
+        new THREE.LineBasicMaterial({
+          color: new THREE.Color(varToHex('--cage')),
+          transparent: true,
+          opacity: 0.92,
+        })
+      );
+      state.cageLines.renderOrder = 2;
+
+      state.scene.add(hemisphere, keyLight, fillLight, floor, floorRing, state.surfaceMesh, state.cageLines);
+
+      await loadEnvironment();
+    }
+
+    function varToHex(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    function replaceSurfaceGeometry(positionData, normalData, indexData) {
+      const geometry = new THREE.BufferGeometry();
+      const positionAttribute = new THREE.BufferAttribute(positionData, 3);
+      const normalAttribute = new THREE.BufferAttribute(normalData, 3);
+
+      positionAttribute.setUsage(THREE.DynamicDrawUsage);
+      normalAttribute.setUsage(THREE.DynamicDrawUsage);
+
+      geometry.setAttribute('position', positionAttribute);
+      geometry.setAttribute('normal', normalAttribute);
+      geometry.setIndex(new THREE.BufferAttribute(indexData, 1));
+      geometry.computeBoundingSphere();
+
+      const previousGeometry = state.surfaceMesh.geometry;
+      state.surfaceMesh.geometry = geometry;
+      previousGeometry.dispose();
+    }
+
+    function replaceCageGeometry(edgePairs, controlPositions) {
+      state.edgePairs = edgePairs;
+      state.cageLinePositions = new Float32Array(edgePairs.length * 3);
+      fillEdgePositions(state.cageLinePositions, controlPositions, edgePairs);
+
+      const geometry = new THREE.BufferGeometry();
+      const positionAttribute = new THREE.BufferAttribute(state.cageLinePositions, 3);
+      positionAttribute.setUsage(THREE.DynamicDrawUsage);
+
+      geometry.setAttribute('position', positionAttribute);
+
+      const previousGeometry = state.cageLines.geometry;
+      state.cageLines.geometry = geometry;
+      previousGeometry.dispose();
+      state.cageLines.visible = state.showCage;
+    }
+
+    function updateCageGeometry() {
+      if (!state.cageLinePositions || !state.edgePairs) {
+        return;
+      }
+
+      fillEdgePositions(state.cageLinePositions, state.animatedPositions, state.edgePairs);
+      state.cageLines.geometry.attributes.position.needsUpdate = true;
+    }
+
+    function disposeSubdivisionMesh() {
+      if (state.osdMesh) {
+        state.osdMesh.delete();
+        state.osdMesh = null;
+      }
+    }
+
+    function rebuildSurface(resetCamera = false) {
+      const model = MODELS[state.modelKey];
+      const mesh = new state.module.SubdivisionMesh();
+      const controlPositions = new Float32Array(model.positions);
+      const animatedPositions = new Float32Array(model.positions);
+      const startedAt = performance.now();
+
+      const initialized = mesh.initFromQuads(
+        animatedPositions,
+        model.quads,
+        model.quads.length / 4,
+        state.level,
+        state.boundary
+      );
+
+      if (!initialized) {
+        mesh.delete();
+        throw new Error('OpenSubdiv failed to initialize the selected control cage.');
+      }
+
+      disposeSubdivisionMesh();
+      state.osdMesh = mesh;
+      state.basePositions = controlPositions;
+      state.animatedPositions = animatedPositions;
+      state.buildMs = performance.now() - startedAt;
+      state.updateMs = 0;
+      state.updateAccumulator = 0;
+      state.updateSamples = 0;
+
+      replaceSurfaceGeometry(
+        new Float32Array(mesh.getPositions()),
+        new Float32Array(mesh.getNormals()),
+        new Uint32Array(mesh.getIndices())
+      );
+      replaceCageGeometry(buildEdgePairs(model.quads), animatedPositions);
+
+      if (resetCamera) {
+        applyCamera(model.camera);
+      }
+
+      updateStats();
+    }
+
+    function animateControlCage(time) {
+      const model = MODELS[state.modelKey];
+
+      if (state.animationSpeed <= 0) {
+        state.animatedPositions.set(state.basePositions);
+        return false;
+      }
+
+      model.animate(time, state.basePositions, state.animatedPositions, state.animationSpeed);
+      return true;
+    }
+
+    function render(now) {
+      if (state.osdMesh) {
+        const changed = animateControlCage(now);
+
+        if (changed) {
+          const updateStart = performance.now();
+
+          state.osdMesh.updatePositions(state.animatedPositions);
+
+          const geometry = state.surfaceMesh.geometry;
+          geometry.attributes.position.array.set(state.osdMesh.getPositions());
+          geometry.attributes.position.needsUpdate = true;
+          geometry.attributes.normal.array.set(state.osdMesh.getNormals());
+          geometry.attributes.normal.needsUpdate = true;
+
+          updateCageGeometry();
+
+          state.updateAccumulator += performance.now() - updateStart;
+          state.updateSamples++;
         }
-        osdMesh.updatePositions(animPos);
-        const geom = threeMesh.geometry;
-        geom.attributes.position.array.set(osdMesh.getPositions());
-        geom.attributes.position.needsUpdate = true;
-        geom.attributes.normal.array.set(osdMesh.getNormals());
-        geom.attributes.normal.needsUpdate = true;
       }
-      
-      controls.update();
-      renderer.render(scene, camera);
-      
-      // FPS counter
-      frameCount++;
-      const now = performance.now();
-      if (now - lastFpsUpdate >= 1000) {
-        document.getElementById('fps').textContent = frameCount;
-        frameCount = 0;
-        lastFpsUpdate = now;
+
+      state.controls.update();
+      state.renderer.render(state.scene, state.camera);
+
+      state.frames++;
+      if (now - state.lastStatRefresh >= 1000) {
+        state.fps = Math.round((state.frames * 1000) / (now - state.lastStatRefresh));
+        state.updateMs = state.updateSamples > 0 ? state.updateAccumulator / state.updateSamples : 0;
+        state.frames = 0;
+        state.updateAccumulator = 0;
+        state.updateSamples = 0;
+        state.lastStatRefresh = now;
+        updateStats();
       }
+    }
+
+    function handleResize() {
+      if (!state.renderer || !state.camera) {
+        return;
+      }
+
+      state.camera.aspect = window.innerWidth / window.innerHeight;
+      state.camera.updateProjectionMatrix();
+      state.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      state.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function bindUi() {
+      for (const [key, model] of Object.entries(MODELS)) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = model.label;
+        dom.model.appendChild(option);
+      }
+
+      dom.model.value = state.modelKey;
+      dom.level.value = String(state.level);
+      dom.boundary.value = String(state.boundary);
+      dom.speed.value = String(state.animationSpeed);
+      dom.showCage.checked = state.showCage;
+      updateSpeedLabel();
+      updateStats();
+
+      dom.model.addEventListener('change', () => {
+        state.modelKey = dom.model.value;
+        rebuildSurface(true);
+        if (mobileQuery.matches) {
+          setPanelOpen(false);
+        }
+      });
+
+      dom.level.addEventListener('change', () => {
+        state.level = Number(dom.level.value);
+        rebuildSurface(false);
+      });
+
+      dom.boundary.addEventListener('change', () => {
+        state.boundary = Number(dom.boundary.value);
+        rebuildSurface(false);
+      });
+
+      dom.speed.addEventListener('input', () => {
+        state.animationSpeed = Number(dom.speed.value);
+        updateSpeedLabel();
+        updateStats();
+      });
+
+      dom.showCage.addEventListener('change', () => {
+        state.showCage = dom.showCage.checked;
+        if (state.cageLines) {
+          state.cageLines.visible = state.showCage;
+        }
+      });
+
+      dom.menuButton.addEventListener('click', () => setPanelOpen(true));
+      dom.closeButton.addEventListener('click', () => setPanelOpen(false));
+      dom.scrim.addEventListener('click', () => setPanelOpen(false));
+
+      window.addEventListener('resize', handleResize);
+      mobileQuery.addEventListener('change', () => {
+        syncResponsivePanel();
+        handleResize();
+      });
     }
 
     async function init() {
-      await loadWasm();
-      subdivide(1);
-      await setup();
-      renderer.setAnimationLoop(render);
-      
-      document.getElementById('level').addEventListener('change', e => subdivide(+e.target.value));
-      document.getElementById('speed').addEventListener('input', e => { animSpeed = +e.target.value; });
-      window.addEventListener('resize', () => {
-        camera.aspect = innerWidth / innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(innerWidth, innerHeight);
-      });
+      try {
+        bindUi();
+        syncResponsivePanel();
+        setStatus('Loading demo metadata...');
+
+        const meta = await loadMeta();
+        state.assetVersion = meta.assetVersion || meta.packageVersion || 'dev';
+        dom.packageVersion.textContent = meta.packageVersion || 'dev';
+        dom.threeVersion.textContent = meta.threeVersion || '0.183.2';
+        dom.buildStamp.textContent = formatBuildStamp(meta.builtAt);
+
+        setStatus(`Loading OpenSubdiv v${state.assetVersion}...`);
+        await loadWasm();
+
+        setStatus('Initializing WebGPU renderer...');
+        await setupScene();
+        rebuildSurface(true);
+
+        setStatus(`Ready - v${meta.packageVersion || state.assetVersion}`, 'ready');
+        state.renderer.setAnimationLoop(render);
+      } catch (error) {
+        console.error(error);
+        setStatus('Demo failed to start', 'error');
+        dom.buildStamp.textContent = error instanceof Error ? error.message : String(error);
+      }
     }
 
-    init().catch(e => console.error(e));
+    init();
   </script>
 </body>
 </html>

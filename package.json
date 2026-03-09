@@ -36,8 +36,9 @@
     "build:wasm:optimize": "wasm-opt -Oz --enable-bulk-memory --enable-nontrapping-float-to-int dist/opensubdiv.wasm -o dist/opensubdiv.wasm",
     "build:threejs": "tsc -p tsconfig.wrapper.json",
     "build:types": "node -e \"const fs=require('fs'); fs.copyFileSync('src/opensubdiv.mjs.d.ts', 'dist/opensubdiv.d.ts'); fs.copyFileSync('src/opensubdiv.mjs.d.ts', 'dist/opensubdiv.d.mts');\"",
-    "build": "npm run build:prepare && npm run build:wasm && npm run build:wasm:esm && npm run build:wasm:optimize && npm run build:threejs && npm run build:types",
-    "build:quick": "npm run build:prepare && npm run build:wasm && npm run build:wasm:esm && npm run build:threejs && npm run build:types",
+    "build:docs": "node scripts/sync-demo-assets.js",
+    "build": "npm run build:prepare && npm run build:wasm && npm run build:wasm:esm && npm run build:wasm:optimize && npm run build:threejs && npm run build:types && npm run build:docs",
+    "build:quick": "npm run build:prepare && npm run build:wasm && npm run build:wasm:esm && npm run build:threejs && npm run build:types && npm run build:docs",
     "typecheck": "tsc --noEmit",
     "test": "node test/node-test.js",
     "prepublishOnly": "npm run build"

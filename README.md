@@ -146,6 +146,8 @@ npm run build:quick
 npm test
 ```
 
+Both `npm run build` and `npm run build:quick` now refresh the GitHub Pages demo assets in `docs/` from the current `dist/` output, so the package build and the live demo stay aligned.
+
 ### Build Scripts
 
 | Script | Description |
@@ -156,6 +158,7 @@ npm test
 | `build:wasm:esm` | Build ES Module WASM module |
 | `build:wasm:optimize` | Run wasm-opt -Oz on WASM binary |
 | `build:threejs` | Compile TypeScript wrapper |
+| `build:docs` | Sync release artifacts and metadata into `docs/` for GitHub Pages |
 
 ## License
 
