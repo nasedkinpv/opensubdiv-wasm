@@ -6,21 +6,21 @@
   <title>OpenSubdiv WASM Demo</title>
   <style>
     :root {
-      --bg: #e6ddd0;
-      --bg-deep: #d7cab8;
-      --panel: rgba(255, 248, 239, 0.9);
-      --panel-border: rgba(94, 72, 46, 0.12);
-      --ink: #231c14;
-      --muted: #706455;
-      --line: rgba(91, 73, 51, 0.12);
-      --accent: #c46336;
-      --accent-deep: #8f4123;
-      --surface: #7f99ac;
-      --surface-deep: #506475;
-      --cage: #bc6438;
-      --shadow: 0 26px 72px rgba(51, 36, 20, 0.18);
-      --radius-xl: 22px;
-      --radius-lg: 16px;
+      --bg: #f5f5f7;
+      --bg-deep: #ececef;
+      --panel: rgba(255, 255, 255, 0.82);
+      --panel-border: rgba(60, 60, 67, 0.16);
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(60, 60, 67, 0.12);
+      --accent: #0071e3;
+      --accent-deep: #0071e3;
+      --surface: #bcc3cb;
+      --surface-deep: #7e8792;
+      --cage: #8e8e93;
+      --shadow: 0 16px 38px rgba(0, 0, 0, 0.08);
+      --radius-xl: 20px;
+      --radius-lg: 14px;
       --radius-md: 12px;
       --radius-sm: 999px;
     }
@@ -32,11 +32,8 @@
     }
 
     body {
-      font-family: "SF Pro Text", "Segoe UI", "Helvetica Neue", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(255, 244, 227, 0.9), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(209, 189, 164, 0.5), transparent 36%),
-        linear-gradient(160deg, var(--bg), var(--bg-deep));
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      background: linear-gradient(180deg, var(--bg), var(--bg-deep));
       color: var(--ink);
       overflow: hidden;
       overscroll-behavior: none;
@@ -46,6 +43,10 @@
     select,
     input {
       font: inherit;
+    }
+
+    [hidden] {
+      display: none !important;
     }
 
     #container {
@@ -73,8 +74,8 @@
       padding: 10px 14px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--panel-border);
-      background: rgba(255, 249, 242, 0.88);
-      box-shadow: 0 14px 38px rgba(48, 35, 23, 0.14);
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
       color: var(--muted);
       font-size: 12px;
       letter-spacing: 0.02em;
@@ -99,11 +100,11 @@
       justify-content: center;
       min-width: 104px;
       padding: 11px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.36);
+      border: 1px solid var(--panel-border);
       border-radius: var(--radius-sm);
-      background: rgba(36, 28, 20, 0.84);
-      color: #f8efe6;
-      box-shadow: 0 18px 48px rgba(22, 14, 8, 0.24);
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--ink);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
       cursor: pointer;
     }
 
@@ -111,7 +112,7 @@
       position: fixed;
       inset: 0;
       z-index: 20;
-      background: rgba(28, 20, 14, 0.32);
+      background: rgba(28, 28, 30, 0.2);
       opacity: 0;
       pointer-events: none;
       transition: opacity 180ms ease;
@@ -129,7 +130,7 @@
       border-radius: var(--radius-xl);
       background: var(--panel);
       box-shadow: var(--shadow);
-      padding: 22px;
+      padding: 20px;
     }
 
     #panel::-webkit-scrollbar {
@@ -137,7 +138,7 @@
     }
 
     #panel::-webkit-scrollbar-thumb {
-      background: rgba(92, 74, 53, 0.16);
+      background: rgba(60, 60, 67, 0.16);
       border-radius: 999px;
     }
 
@@ -150,25 +151,21 @@
 
     .eyebrow {
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--accent-deep);
+      color: var(--muted);
     }
 
     h1 {
       margin-top: 8px;
-      font-size: 30px;
-      line-height: 0.95;
-      letter-spacing: -0.04em;
+      font-size: 26px;
+      line-height: 1;
+      letter-spacing: -0.03em;
     }
 
     .tagline {
-      margin-top: 10px;
-      max-width: 28ch;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.45;
+      display: none;
     }
 
     .close-button {
@@ -178,23 +175,23 @@
       padding: 10px 12px;
       border: 1px solid var(--panel-border);
       border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.72);
+      background: rgba(255, 255, 255, 0.92);
       color: var(--ink);
       cursor: pointer;
     }
 
     .section {
-      margin-top: 18px;
-      padding-top: 18px;
+      margin-top: 16px;
+      padding-top: 16px;
       border-top: 1px solid var(--line);
     }
 
     .section-title {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--muted);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
 
@@ -207,17 +204,17 @@
     .field label,
     .toggle span:first-child {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--muted);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
 
     .helper {
-      margin-top: 10px;
+      margin-top: 8px;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
+      font-size: 12px;
+      line-height: 1.45;
     }
 
     .control-grid {
@@ -232,12 +229,11 @@
 
     select {
       width: 100%;
-      padding: 11px 13px;
-      border: 1px solid rgba(85, 67, 47, 0.08);
+      padding: 10px 12px;
+      border: 1px solid rgba(60, 60, 67, 0.16);
       border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.92);
       color: var(--ink);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
       cursor: pointer;
     }
 
@@ -254,10 +250,10 @@
       margin-left: 8px;
       padding: 4px 9px;
       border-radius: var(--radius-sm);
-      background: rgba(196, 99, 54, 0.12);
+      background: rgba(0, 113, 227, 0.08);
       color: var(--accent-deep);
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: 0.04em;
     }
 
@@ -265,10 +261,10 @@
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      padding: 13px 14px;
-      border: 1px solid rgba(85, 67, 47, 0.08);
+      padding: 11px 12px;
+      border: 1px solid rgba(60, 60, 67, 0.16);
       border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.62);
+      background: rgba(255, 255, 255, 0.92);
     }
 
     .toggle input {
@@ -285,18 +281,17 @@
     }
 
     .stat-card {
-      padding: 13px;
-      border: 1px solid rgba(85, 67, 47, 0.08);
+      padding: 12px;
+      border: 1px solid rgba(60, 60, 67, 0.12);
       border-radius: var(--radius-md);
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(249, 241, 230, 0.72));
+      background: rgba(255, 255, 255, 0.72);
     }
 
     .stat-card span {
       display: block;
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-weight: 600;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
     }
@@ -304,7 +299,7 @@
     .stat-card strong {
       display: block;
       margin-top: 6px;
-      font-size: 22px;
+      font-size: 20px;
       line-height: 1;
       letter-spacing: -0.04em;
       font-variant-numeric: tabular-nums;
@@ -317,17 +312,17 @@
     }
 
     .footer-meta div {
-      padding: 12px 13px;
+      padding: 11px 12px;
       border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.66);
-      border: 1px solid rgba(85, 67, 47, 0.08);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(60, 60, 67, 0.12);
     }
 
     .footer-meta span {
       display: block;
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-weight: 600;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
     }
@@ -335,7 +330,7 @@
     .footer-meta strong {
       display: block;
       margin-top: 6px;
-      font-size: 18px;
+      font-size: 16px;
       letter-spacing: -0.03em;
     }
 
@@ -348,7 +343,7 @@
     }
 
     .links a {
-      color: var(--accent-deep);
+      color: var(--accent);
       text-decoration: none;
     }
 
@@ -367,8 +362,8 @@
       padding: 11px 12px;
       border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.28);
-      background: rgba(28, 22, 17, 0.76);
-      box-shadow: 0 18px 48px rgba(16, 12, 8, 0.28);
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
       transform: translateX(-50%);
     }
 
@@ -377,16 +372,16 @@
       min-width: 0;
       padding: 8px 10px;
       border-radius: 14px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #f4ebdf;
+      background: rgba(245, 245, 247, 0.92);
+      color: var(--ink);
     }
 
     .hud-chip span {
       display: block;
       font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: rgba(244, 235, 223, 0.66);
+      letter-spacing: 0.06em;
+      color: var(--muted);
     }
 
     .hud-chip strong {
@@ -443,11 +438,11 @@
 
     @media (max-width: 620px) {
       #panel {
-        padding: 18px;
-      }
+      padding: 18px;
+    }
 
-      h1 {
-        font-size: 26px;
+    h1 {
+        font-size: 24px;
       }
 
       .control-grid,
@@ -477,9 +472,8 @@
   <aside id="panel" aria-hidden="false">
     <div class="panel-header">
       <div>
-        <p class="eyebrow">OpenSubdiv WASM</p>
-        <h1>Subdivision Playground</h1>
-        <p class="tagline">WebGPU demo with synced release assets, richer mesh presets, and live subdivision stats.</p>
+      <p class="eyebrow">OpenSubdiv WASM</p>
+      <h1>OpenSubdiv</h1>
       </div>
       <button id="closeButton" class="close-button" type="button">Close</button>
     </div>
@@ -489,7 +483,6 @@
         <label for="model">Model</label>
         <select id="model"></select>
       </div>
-      <p id="modelSummary" class="helper"></p>
     </div>
 
     <div class="section">
@@ -504,7 +497,7 @@
           </select>
         </div>
 
-        <div class="field">
+        <div id="boundaryField" class="field">
           <label for="boundary">Boundary</label>
           <select id="boundary">
             <option value="0">None</option>
@@ -520,38 +513,28 @@
 
         <label class="toggle field field--wide" for="showCage">
           <span>Show control cage</span>
-          <input id="showCage" type="checkbox" checked>
+          <input id="showCage" type="checkbox">
         </label>
       </div>
-      <p class="helper">Closed cages ignore most boundary settings. Open cages such as the sheet show the difference immediately.</p>
     </div>
 
     <div class="section">
       <div class="section-title">Stats</div>
       <div class="stat-grid">
-        <div class="stat-card"><span>Control verts</span><strong id="inputVerts">-</strong></div>
-        <div class="stat-card"><span>Control faces</span><strong id="inputFaces">-</strong></div>
-        <div class="stat-card"><span>Surface verts</span><strong id="outputVerts">-</strong></div>
-        <div class="stat-card"><span>Surface tris</span><strong id="outputTris">-</strong></div>
-        <div class="stat-card"><span>Build time</span><strong id="buildMs">-</strong></div>
-        <div class="stat-card"><span>Update time</span><strong id="updateMs">-</strong></div>
+        <div class="stat-card"><span>Control verts</span><strong id="controlVerts">-</strong></div>
+        <div class="stat-card"><span>Surface verts</span><strong id="surfaceVerts">-</strong></div>
+        <div class="stat-card"><span>Surface tris</span><strong id="surfaceTris">-</strong></div>
         <div class="stat-card"><span>FPS</span><strong id="fps">-</strong></div>
         <div class="stat-card"><span>Renderer</span><strong>WebGPU</strong></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="footer-meta">
-        <div><span>Package</span><strong id="packageVersion">-</strong></div>
-        <div><span>Three</span><strong id="threeVersion">-</strong></div>
-      </div>
-      <p id="buildStamp" class="helper">Waiting for synced demo metadata...</p>
       <div class="links">
         <a href="https://github.com/nasedkinpv/opensubdiv-wasm">GitHub</a>
         <a href="https://github.com/nasedkinpv/opensubdiv-wasm/releases">Releases</a>
         <a href="https://www.npmjs.com/package/@nasedkinpv/opensubdiv-wasm">npm</a>
       </div>
-      <p class="helper">Drag to orbit. Scroll to zoom. On mobile the control panel stays collapsed by default so it does not cover the render.</p>
     </div>
   </aside>
 
@@ -588,22 +571,16 @@
       scrim: document.getElementById('scrim'),
       panel: document.getElementById('panel'),
       model: document.getElementById('model'),
-      modelSummary: document.getElementById('modelSummary'),
+      boundaryField: document.getElementById('boundaryField'),
       level: document.getElementById('level'),
       boundary: document.getElementById('boundary'),
       speed: document.getElementById('speed'),
       speedValue: document.getElementById('speedValue'),
       showCage: document.getElementById('showCage'),
-      inputVerts: document.getElementById('inputVerts'),
-      inputFaces: document.getElementById('inputFaces'),
-      outputVerts: document.getElementById('outputVerts'),
-      outputTris: document.getElementById('outputTris'),
-      buildMs: document.getElementById('buildMs'),
-      updateMs: document.getElementById('updateMs'),
+      controlVerts: document.getElementById('controlVerts'),
+      surfaceVerts: document.getElementById('surfaceVerts'),
+      surfaceTris: document.getElementById('surfaceTris'),
       fps: document.getElementById('fps'),
-      packageVersion: document.getElementById('packageVersion'),
-      threeVersion: document.getElementById('threeVersion'),
-      buildStamp: document.getElementById('buildStamp'),
       hudModel: document.getElementById('hudModel'),
       hudVerts: document.getElementById('hudVerts'),
       hudFps: document.getElementById('hudFps'),
@@ -623,24 +600,20 @@
       level: 2,
       boundary: 1,
       animationSpeed: 0.9,
-      showCage: true,
+      showCage: false,
       basePositions: null,
       animatedPositions: null,
       edgePairs: null,
       cageLinePositions: null,
-      buildMs: 0,
-      updateMs: 0,
       fps: 0,
       frames: 0,
-      updateSamples: 0,
-      updateAccumulator: 0,
       lastStatRefresh: performance.now(),
     };
 
     function createCubeModel() {
       return {
         label: 'Soft Cube',
-        summary: 'Eight control verts and six quads. A fast closed baseline for comparing pure Catmull-Clark smoothing.',
+        summary: 'Closed baseline cage for the cleanest Catmull-Clark result.',
         closed: true,
         camera: {
           position: [4.5, 2.8, 5.7],
@@ -708,15 +681,15 @@
           const bottomRight = bottomLeft + 1;
 
           quads[quadOffset++] = topLeft;
-          quads[quadOffset++] = topRight;
-          quads[quadOffset++] = bottomRight;
           quads[quadOffset++] = bottomLeft;
+          quads[quadOffset++] = bottomRight;
+          quads[quadOffset++] = topRight;
         }
       }
 
       return {
         label: 'Ripple Sheet',
-        summary: 'Open quad sheet with visible borders. This is the easiest preset for seeing boundary interpolation affect edge tension.',
+        summary: 'Open quad sheet that makes boundary interpolation visible immediately.',
         closed: false,
         camera: {
           position: [4.4, 3.2, 5.8],
@@ -774,15 +747,15 @@
           const d = majorIndex * minorSegments + nextMinor;
 
           quads[quadOffset++] = a;
-          quads[quadOffset++] = b;
-          quads[quadOffset++] = c;
           quads[quadOffset++] = d;
+          quads[quadOffset++] = c;
+          quads[quadOffset++] = b;
         }
       }
 
       return {
         label: 'Breathing Torus',
-        summary: 'Dense closed cage with enough control faces to make the live build and update timings meaningful.',
+        summary: 'Denser closed cage for smoother highlights and a richer silhouette.',
         closed: true,
         camera: {
           position: [0.5, 2.9, 6.8],
@@ -830,19 +803,6 @@
         notation: 'compact',
         maximumFractionDigits: value >= 1000 ? 1 : 0,
       }).format(value);
-    }
-
-    function formatMs(value) {
-      return `${value.toFixed(value >= 10 ? 1 : 2)} ms`;
-    }
-
-    function formatBuildStamp(isoString) {
-      if (!isoString) {
-        return 'GitHub Pages assets sync automatically from dist/';
-      }
-
-      const date = new Date(isoString);
-      return `GitHub Pages assets sync automatically from dist/ - ${date.toLocaleString()}`;
     }
 
     function setStatus(message, tone = 'loading') {
@@ -914,24 +874,16 @@
 
     function updateStats() {
       const model = MODELS[state.modelKey];
-      const inputVerts = state.basePositions ? state.basePositions.length / 3 : 0;
-      const inputFaces = model.quads.length / 4;
+      const controlVerts = state.basePositions ? state.basePositions.length / 3 : 0;
       const outputVerts = state.osdMesh ? state.osdMesh.getVertexCount() : 0;
       const outputTris = state.osdMesh ? state.osdMesh.getTriangleCount() : 0;
 
-      dom.inputVerts.textContent = formatCount(inputVerts);
-      dom.inputFaces.textContent = formatCount(inputFaces);
-      dom.outputVerts.textContent = formatCount(outputVerts);
-      dom.outputTris.textContent = formatCount(outputTris);
-      dom.buildMs.textContent = state.buildMs > 0 ? formatMs(state.buildMs) : '-';
-      dom.updateMs.textContent = state.updateMs > 0 ? formatMs(state.updateMs) : state.animationSpeed > 0 ? '...' : 'Idle';
+      dom.controlVerts.textContent = formatCount(controlVerts);
+      dom.surfaceVerts.textContent = formatCount(outputVerts);
+      dom.surfaceTris.textContent = formatCount(outputTris);
       dom.fps.textContent = state.fps > 0 ? String(state.fps) : '-';
-
-      const boundaryHint = model.closed
-        ? 'Closed cage - boundary mode mostly acts as a no-op.'
-        : 'Open cage - boundary mode changes how the border stays pinned.';
-
-      dom.modelSummary.textContent = `${model.summary} ${boundaryHint}`;
+      dom.boundaryField.hidden = model.closed;
+      dom.level.parentElement.classList.toggle('field--wide', model.closed);
       updateHud(model.label, outputVerts);
     }
 
@@ -1146,10 +1098,6 @@
       state.osdMesh = mesh;
       state.basePositions = controlPositions;
       state.animatedPositions = animatedPositions;
-      state.buildMs = performance.now() - startedAt;
-      state.updateMs = 0;
-      state.updateAccumulator = 0;
-      state.updateSamples = 0;
 
       replaceSurfaceGeometry(
         new Float32Array(mesh.getPositions()),
@@ -1182,8 +1130,6 @@
         const changed = animateControlCage(now);
 
         if (changed) {
-          const updateStart = performance.now();
-
           state.osdMesh.updatePositions(state.animatedPositions);
 
           const geometry = state.surfaceMesh.geometry;
@@ -1193,9 +1139,6 @@
           geometry.attributes.normal.needsUpdate = true;
 
           updateCageGeometry();
-
-          state.updateAccumulator += performance.now() - updateStart;
-          state.updateSamples++;
         }
       }
 
@@ -1205,10 +1148,7 @@
       state.frames++;
       if (now - state.lastStatRefresh >= 1000) {
         state.fps = Math.round((state.frames * 1000) / (now - state.lastStatRefresh));
-        state.updateMs = state.updateSamples > 0 ? state.updateAccumulator / state.updateSamples : 0;
         state.frames = 0;
-        state.updateAccumulator = 0;
-        state.updateSamples = 0;
         state.lastStatRefresh = now;
         updateStats();
       }
@@ -1291,10 +1231,6 @@
 
         const meta = await loadMeta();
         state.assetVersion = meta.assetVersion || meta.packageVersion || 'dev';
-        dom.packageVersion.textContent = meta.packageVersion || 'dev';
-        dom.threeVersion.textContent = meta.threeVersion || '0.183.2';
-        dom.buildStamp.textContent = formatBuildStamp(meta.builtAt);
-
         setStatus(`Loading OpenSubdiv v${state.assetVersion}...`);
         await loadWasm();
 
@@ -1302,7 +1238,7 @@
         await setupScene();
         rebuildSurface(true);
 
-        setStatus(`Ready - v${meta.packageVersion || state.assetVersion}`, 'ready');
+        setStatus(`v${meta.packageVersion || state.assetVersion}`, 'ready');
         state.renderer.setAnimationLoop(render);
       } catch (error) {
         console.error(error);
