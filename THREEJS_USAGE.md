@@ -14,7 +14,7 @@ npm install @nasedkinpv/opensubdiv-wasm
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js"
   }
 }
 </script>
@@ -93,6 +93,18 @@ async function main() {
 main();
 ```
 
+### Custom WASM Location
+
+When your bundler serves `opensubdiv.wasm` from a non-default URL, pass Emscripten module options into the factory:
+
+```typescript
+import OpenSubdiv from '@nasedkinpv/opensubdiv-wasm';
+
+const module = await OpenSubdiv({
+  locateFile: (path, prefix) => new URL(path, prefix).toString(),
+});
+```
+
 ## TypeScript Wrapper
 
 For a higher-level TypeScript API:
@@ -109,6 +121,9 @@ surface.initFromQuads(positions, quadIndices);
 
 // Or from Three.js geometry (must be indexed quad mesh)
 surface.initFromQuadGeometry(myQuadGeometry);
+
+// Interleaved position attributes are supported as well
+surface.initFromQuadGeometry(interleavedQuadGeometry);
 
 // Get Three.js BufferGeometry (pass THREE module)
 const subdividedGeometry = surface.toBufferGeometry(THREE);

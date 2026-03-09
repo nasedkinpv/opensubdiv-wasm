@@ -19,9 +19,9 @@ High-performance Catmull-Clark subdivision surfaces with Three.js integration.
 
 | File | Size | Gzipped |
 |------|------|---------|
-| `opensubdiv.wasm` | 156 KB | **57 KB** |
-| `opensubdiv.mjs` | 46 KB | 12 KB |
-| Total | 202 KB | **69 KB** |
+| `opensubdiv.wasm` | 163 KB | **60 KB** |
+| `opensubdiv.mjs` | 46 KB | 13 KB |
+| Total | 209 KB | **72 KB** |
 
 ## Installation
 
@@ -94,6 +94,8 @@ surface.dispose();
 
 See [THREEJS_USAGE.md](./THREEJS_USAGE.md) for complete API documentation.
 
+When loading the ESM build in a custom runtime or bundler, you can pass Emscripten module options such as `locateFile()` to control where `opensubdiv.wasm` is fetched from.
+
 ## Performance
 
 Benchmarked with 984 input vertices (quad mesh):
@@ -117,21 +119,21 @@ Benchmarked with 984 input vertices (quad mesh):
 - [Binaryen](https://github.com/WebAssembly/binaryen) (for `wasm-opt` optimization)
 
 ```bash
-# Install Emscripten (one-time)
+# Homebrew (macOS)
+brew install emscripten binaryen
+
+# Or install via emsdk (cross-platform)
 git clone https://github.com/emscripten-core/emsdk.git
 cd emsdk && ./emsdk install latest && ./emsdk activate latest
 
-# Install Binaryen (macOS)
-brew install binaryen
-
-# Or via npm (cross-platform)
+# Binaryen via npm is also supported
 npm install -g binaryen
 ```
 
 ### Build Commands
 
 ```bash
-# Activate Emscripten (every terminal session)
+# Activate Emscripten if you installed it via emsdk
 source /path/to/emsdk/emsdk_env.sh
 
 # Full build (WASM + wasm-opt + TypeScript wrapper)

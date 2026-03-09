@@ -30,6 +30,25 @@ export function resetModule() {
     cachedModule = null;
     modulePromise = null;
 }
+function extractPositions(attribute) {
+    const isInterleaved = 'isInterleavedBufferAttribute' in attribute &&
+        attribute.isInterleavedBufferAttribute;
+    if (attribute.itemSize < 3) {
+        throw new Error(`Position attribute itemSize (${attribute.itemSize}) must be at least 3`);
+    }
+    if (!isInterleaved &&
+        attribute.itemSize === 3 &&
+        attribute.array instanceof Float32Array) {
+        return new Float32Array(attribute.array);
+    }
+    const positions = new Float32Array(attribute.count * 3);
+    for (let i = 0; i < attribute.count; i++) {
+        positions[i * 3 + 0] = attribute.getX(i);
+        positions[i * 3 + 1] = attribute.getY(i);
+        positions[i * 3 + 2] = attribute.getZ(i);
+    }
+    return positions;
+}
 export class SubdivisionSurface {
     constructor(options = {}) {
         this.mesh = null;
@@ -61,7 +80,7 @@ export class SubdivisionSurface {
         if (!indexAttr) {
             throw new Error('Geometry must be indexed');
         }
-        const positions = new Float32Array(posAttr.array);
+        const positions = extractPositions(posAttr);
         const indices = new Int32Array(indexAttr.array);
         if (indices.length % 4 !== 0) {
             throw new Error(`Indices length (${indices.length}) must be a multiple of 4 for quad geometry`);

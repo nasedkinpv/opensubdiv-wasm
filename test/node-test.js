@@ -1,4 +1,14 @@
-const OpenSubdiv = require('../dist/opensubdiv.js');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const distEntry = path.join(__dirname, '..', 'dist', 'opensubdiv.js');
+
+if (!fs.existsSync(distEntry)) {
+  console.error('Missing dist/opensubdiv.js. Run "npm run build" before "npm test".');
+  process.exit(1);
+}
+
+const OpenSubdiv = require(distEntry);
 
 async function runTests() {
   console.log('=== OpenSubdiv WASM Test Suite ===\n');

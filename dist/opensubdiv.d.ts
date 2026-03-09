@@ -54,8 +54,19 @@ export interface OpenSubdivModule {
   BOUNDARY_EDGE_AND_CORNER: number;
 }
 
-export type OpenSubdivFactory = () => Promise<OpenSubdivModule>;
+export interface OpenSubdivModuleOptions {
+  locateFile?: (path: string, prefix: string) => string;
+  print?: (...args: unknown[]) => void;
+  printErr?: (...args: unknown[]) => void;
+  onAbort?: (what?: unknown) => void;
+  onRuntimeInitialized?: () => void;
+  noExitRuntime?: boolean;
+  [key: string]: unknown;
+}
+
+export type OpenSubdivFactory = (
+  moduleArg?: OpenSubdivModuleOptions
+) => Promise<OpenSubdivModule>;
 
 declare const factory: OpenSubdivFactory;
 export default factory;
-export = factory;

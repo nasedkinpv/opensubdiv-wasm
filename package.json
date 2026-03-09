@@ -1,6 +1,6 @@
 {
   "name": "@nasedkinpv/opensubdiv-wasm",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "WebAssembly port of OpenSubdiv for Three.js - High-performance Catmull-Clark subdivision surfaces in the browser",
   "main": "dist/opensubdiv.js",
   "module": "dist/opensubdiv.mjs",
@@ -25,16 +25,19 @@
     "dist/opensubdiv.d.mts",
     "dist/threejs.js",
     "dist/threejs.d.ts",
+    "THREEJS_USAGE.md",
     "NOTICE.txt",
     "LICENSE.txt"
   ],
   "scripts": {
+    "build:prepare": "node -e \"require('fs').mkdirSync('dist', { recursive: true })\"",
     "build:wasm": "em++ -O3 -flto -std=c++17 -I./opensubdiv -I. src/wasm_bindings.cpp build-wasm/lib/libosdCPU.a -o dist/opensubdiv.js --bind -s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME='OpenSubdiv' -s ALLOW_MEMORY_GROWTH=1",
     "build:wasm:esm": "em++ -O3 -flto -std=c++17 -I./opensubdiv -I. src/wasm_bindings.cpp build-wasm/lib/libosdCPU.a -o dist/opensubdiv.mjs --bind -s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME='OpenSubdiv' -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker'",
     "build:wasm:optimize": "wasm-opt -Oz --enable-bulk-memory --enable-nontrapping-float-to-int dist/opensubdiv.wasm -o dist/opensubdiv.wasm",
     "build:threejs": "tsc -p tsconfig.wrapper.json",
-    "build": "npm run build:wasm && npm run build:wasm:esm && npm run build:wasm:optimize && npm run build:threejs",
-    "build:quick": "npm run build:wasm && npm run build:wasm:esm && npm run build:threejs",
+    "build:types": "node -e \"const fs=require('fs'); fs.copyFileSync('src/opensubdiv.mjs.d.ts', 'dist/opensubdiv.d.ts'); fs.copyFileSync('src/opensubdiv.mjs.d.ts', 'dist/opensubdiv.d.mts');\"",
+    "build": "npm run build:prepare && npm run build:wasm && npm run build:wasm:esm && npm run build:wasm:optimize && npm run build:threejs && npm run build:types",
+    "build:quick": "npm run build:prepare && npm run build:wasm && npm run build:wasm:esm && npm run build:threejs && npm run build:types",
     "typecheck": "tsc --noEmit",
     "test": "node test/node-test.js",
     "prepublishOnly": "npm run build"
@@ -65,10 +68,10 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@types/three": "^0.182.0",
-    "three": "^0.182.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^25.3.5",
+    "@types/three": "^0.183.1",
+    "three": "^0.183.2",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=18.0.0"
